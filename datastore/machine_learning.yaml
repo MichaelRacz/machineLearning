@@ -6,10 +6,10 @@ info:
   description: Manage data for machine learning services.
   version: '1.0.0'
 
-host: datastore
+host: datastore # define on WS
 
 schemes:
-  - https
+  - https # define on WS
 
 basePath: /v1
 
