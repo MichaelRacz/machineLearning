@@ -3,6 +3,7 @@ from flask_restplus import Api, Resource, reqparse, fields
 import app.model as model
 
 app = Flask(__name__)
+app.config.from_envvar('DATASTORE_SETTINGS')
 
 api = Api(app,
     title='datastore',
@@ -130,4 +131,4 @@ class Specification(Resource):
 
 if __name__ == '__main__':
     model.initialize()
-    app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(host='0.0.0.0', port=80)

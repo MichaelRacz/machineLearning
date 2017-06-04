@@ -1,0 +1,5 @@
+version: '3.0'
+services:
+  datastore:
+    environment:
+      DATASTORE_SETTINGS: 'config.test.py'
