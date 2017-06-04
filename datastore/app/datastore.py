@@ -116,7 +116,7 @@ class Wines(Resource):
         session = model.Session()
         session.add(wine)
         session.commit()
-        return {'id': wine.id}
+        return {'id': wine.id}, 201
 
 @specification_ns.route('/swagger.json')
 class Specification(Resource):
