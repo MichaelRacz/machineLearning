@@ -1,5 +1,5 @@
 from flask_restplus import Resource
-from app.endpoints.api import api
+from app.endpoints.restplus import api
 
 specification_ns = api.namespace('specification', description='Swagger specificaton of the API')
 
