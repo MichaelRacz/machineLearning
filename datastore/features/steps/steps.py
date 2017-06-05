@@ -1,12 +1,15 @@
 import json
 from nose.tools import assert_equals, assert_is_not_none, assert_dict_equal, assert_in
-from app.datastore import app
 import app.db_model as model
+from app.endpoints.api import flask_app, api
+from app.endpoints.wines import wines_ns
+
+api.add_namespace(wines_ns)
 
 @given(u'I have access to the Wine API')
 def step_impl(context):
     model.initialize()
-    context.client = app.test_client()
+    context.client = flask_app.test_client()
     context.wines_ns = '/v1/wines/'
 
 @given(u'I have a valid wine record')
