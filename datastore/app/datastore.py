@@ -98,7 +98,15 @@ class Wines(Resource):
         """
         Delete wine
         """
-        return {'delete': 'value'}
+        args = get_wine_arguments.parse_args()
+        id = args['id']
+        session = model.Session()
+        wine = session.query(model.Wine).filter_by(id=id).first()
+        if(wine is None):
+            return {'errors': {'id': "No record with id '{}' found.".format(id)}}, 404
+        session.delete(wine)
+        session.commit()
+        return {'delete': 'value'}, 204
 
     @api.doc(
         description='This endpoint creates a wine record with a correspondening class.',

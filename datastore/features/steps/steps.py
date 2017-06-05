@@ -86,11 +86,15 @@ def step_impl(context):
     error_message = context.response_content['errors']['id']
     assert_in("invalid literal for int() with base 10: '{}'".format(context.id), error_message)
 
-@when(u'I GET the record from the get_wine endpoint')
 @then(u'I GET the record from the get_wine endpoint')
 def step_impl(context):
     _get_wine(context, context.response_content['id'])
     assert_dict_equal(context.response_content, context.wine_record)
+
+@when(u'I GET the record from the get_wine endpoint')
+def step_impl(context):
+    context.id = context.response_content['id']
+    _get_wine(context, context.id)
 
 @when(u'I GET a record with the id "{id}"')
 def step_impl(context, id):
@@ -102,13 +106,29 @@ def _get_wine(context, id):
         .get('{}?id={}'.format(context.wines_ns, id))
     _add_response_to_context(context, response)
 
+@when(u'I DELETE the record')
+def step_impl(context):
+    _delete_wine(context, context.response_content['id'])
+
+@when(u'I DELETE a record with the id "{id}"')
+def step_impl(context, id):
+    context.id = id
+    _delete_wine(context, id)
+
+def _delete_wine(context, id):
+    response = context.client \
+        .delete('{}?id={}'.format(context.wines_ns, id))
+    _add_response_to_context(context, response)
+
 @then(u'the HTTP status code is "{expected_status_code:d}"')
 def step_impl(context, expected_status_code):
     assert_equals(context.response.status_code ,expected_status_code)
 
 def _add_response_to_context(context, response):
     context.response = response
-    context.response_content = json.loads(response.get_data(as_text=True))
+    response_data = response.get_data(as_text=True)
+    if(response_data != ''):
+        context.response_content = json.loads(response_data)
 
 def _get_valid_wine():
     return {
