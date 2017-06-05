@@ -66,6 +66,8 @@ class Wines(Resource):
         id = args['id']
         session = model.Session()
         wine = session.query(model.Wine).filter_by(id=id).first()
+        if(wine is None):
+            return {'errors': {'id': "No record with id '{}' found.".format(id)}}, 404
         session.rollback()
         wine_web = { \
             'alcohol': wine.alcohol, \

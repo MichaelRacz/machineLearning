@@ -47,6 +47,7 @@ def step_impl(context, wine_class):
         'wine_class': wine_class}
     context.wine_record = wine_record
 
+@given(u'I POST it to the create_wine endpoint')
 @when(u'I POST it to the create_wine endpoint')
 def step_impl(context):
     response = context.client.post(context.wines_ns,
@@ -75,12 +76,31 @@ def step_impl(context):
         property_identifier = 'wine.{}'.format(key)
         assert_in('-1 is less than the minimum of 0', context.response_content['errors'][property_identifier])
 
+@then(u'I receive an error indicating that there is no record with the given id')
+def step_impl(context):
+    error_message = context.response_content['errors']['id']
+    assert_in("No record with id '{}' found.".format(context.id), error_message)
+
+@then(u'I receive an error indicating that the id is malformed')
+def step_impl(context):
+    error_message = context.response_content['errors']['id']
+    assert_in("invalid literal for int() with base 10: '{}'".format(context.id), error_message)
+
+@when(u'I GET the record from the get_wine endpoint')
 @then(u'I GET the record from the get_wine endpoint')
 def step_impl(context):
-    response = context.client \
-        .get('{}?id={}'.format(context.wines_ns, context.response_content['id']))
-    _add_response_to_context(context, response)
+    _get_wine(context, context.response_content['id'])
     assert_dict_equal(context.response_content, context.wine_record)
+
+@when(u'I GET a record with the id "{id}"')
+def step_impl(context, id):
+    context.id = id
+    _get_wine(context, id)
+
+def _get_wine(context, id):
+    response = context.client \
+        .get('{}?id={}'.format(context.wines_ns, id))
+    _add_response_to_context(context, response)
 
 @then(u'the HTTP status code is "{expected_status_code:d}"')
 def step_impl(context, expected_status_code):
