@@ -1,9 +1,15 @@
 from flask import Flask, request
-from flask_restplus import Api, Resource, reqparse, fields
-import app.model as model
+from flask_restplus import Api, Resource, reqparse
+import app.db_model as db_model
+from app.web_model import initialize as initialize_web_model
 
 app = Flask(__name__)
 app.config.from_envvar('DATASTORE_SETTINGS')
+
+# TODO:
+# error returnen
+# model initialisieren?
+# weitere refactorings
 
 api = Api(app,
     title='datastore',
@@ -15,31 +21,7 @@ api = Api(app,
 wines_ns = api.namespace('wines', description='API of wine datastore')
 specification_ns = api.namespace('specification', description='Swagger specificaton of the API')
 
-wine = api.model('Wine', {
-    'alcohol': fields.Float(required=True, min=0.0),
-    'malic_acid': fields.Float(required=True, min=0.0),
-    'ash': fields.Float(required=True, min=0.0),
-    'alcalinity_of_ash': fields.Float(required=True, min=0.0),
-    'magnesium':  fields.Integer(required=True, min=0),
-    'total_phenols': fields.Float(required=True, min=0.0),
-    'flavanoids': fields.Float(required=True, min=0.0),
-    'nonflavanoid_phenols': fields.Float(required=True, min=0.0),
-    'proanthocyanins': fields.Float(required=True, min=0.0),
-    'color_intensity': fields.Float(required=True, min=0.0),
-    'hue': fields.Float(required=True, min=0.0),
-    'odxxx_of_diluted_wines': fields.Float(required=True, min=0.0, description='description: OD280/OD315 of diluted wines'),
-    'proline': fields.Integer(required=True, min=0)})
-
-classified_wine = api.model('ClassifiedWine', {
-    'wine': fields.Nested(wine, required=True),
-    'wine_class': fields.String(required=True, enum=['1', '2', '3'])})
-
-wine_id = api.model('WineId', {
-    'id': fields.String(required=True)})
-
-error = api.model('Error', {
-    'code': fields.Integer(required=True),
-    'message': fields.String(required=True)})
+web_model = initialize_web_model(api)
 
 get_wine_arguments = reqparse.RequestParser()
 get_wine_arguments.add_argument('id', type=int, location='args', required=True, nullable=False)
@@ -54,18 +36,17 @@ class Wines(Resource):
         id='get_wine',
         tags='Wines')
     @api.expect(get_wine_arguments, validate=True)
-    @api.response(200, 'Wine successfully returned.', classified_wine)
-    @api.response(404, 'Unknown id.', error)
-    @api.response(422, 'Malformed id.', error)
-    @api.response(500, 'Unexpected server error.', error)
+    @api.response(200, 'Wine successfully returned.', web_model.classified_wine)
+    @api.response(404, 'Unknown id.', web_model.error)
+    @api.response(500, 'Unexpected server error.', web_model.error)
     def get(self):
         """
         Retrieve wine
         """
         args = get_wine_arguments.parse_args()
         id = args['id']
-        session = model.Session()
-        wine = session.query(model.Wine).filter_by(id=id).first()
+        session = db_model.Session()
+        wine = session.query(db_model.Wine).filter_by(id=id).first()
         if(wine is None):
             return {'errors': {'id': "No record with id '{}' found.".format(id)}}, 404
         session.rollback()
@@ -83,7 +64,7 @@ class Wines(Resource):
             'hue': wine.hue,
             'odxxx_of_diluted_wines': wine.odxxx_of_diluted_wines,
             'proline': wine.proline}
-        return {'wine_class': wine.wine_class, 'wine': wine_web}
+        return {'wine_class': wine.wine_class, 'wine': wine_web}, 200
 
     @api.doc(
         description='This endpoint deletes a wine record of a given id.',
@@ -91,17 +72,16 @@ class Wines(Resource):
         tags='Wines')
     @api.expect(delete_wine_arguments, validate=True)
     @api.response(204, 'Wine successfully deleted.')
-    @api.response(404, 'Unknown id.', error)
-    @api.response(422, 'Malformed id.', error)
-    @api.response(500, 'Unexpected server error.', error)
+    @api.response(404, 'Unknown id.', web_model.error)
+    @api.response(500, 'Unexpected server error.', web_model.error)
     def delete(self):
         """
         Delete wine
         """
         args = get_wine_arguments.parse_args()
         id = args['id']
-        session = model.Session()
-        wine = session.query(model.Wine).filter_by(id=id).first()
+        session = db_model.Session()
+        wine = session.query(db_model.Wine).filter_by(id=id).first()
         if(wine is None):
             return {'errors': {'id': "No record with id '{}' found.".format(id)}}, 404
         session.delete(wine)
@@ -112,18 +92,17 @@ class Wines(Resource):
         description='This endpoint creates a wine record with a correspondening class.',
         id='create_wine',
         tags='Wines')
-    @api.expect(classified_wine, validate=True)
-    @api.response(201, 'Wine successfully created.', wine_id)
-    @api.response(422, 'Malformed id.', error)
-    @api.response(500, 'Unexpected server error.', error)
+    @api.expect(web_model.classified_wine, validate=True)
+    @api.response(201, 'Wine successfully created.', web_model.wine_id)
+    @api.response(500, 'Unexpected server error.', web_model.error)
     def post(self):
         """
         Create wine
         """
         classified_wine = request.get_json(force=True)
         merged_wine = {**{'wine_class': classified_wine['wine_class']}, **classified_wine['wine']}
-        wine = model.Wine(**merged_wine)
-        session = model.Session()
+        wine = db_model.Wine(**merged_wine)
+        session = db_model.Session()
         session.add(wine)
         session.commit()
         return {'id': wine.id}, 201
@@ -135,10 +114,10 @@ class Specification(Resource):
         id='get_specification',
         tags='Specification')
     @api.response(200, 'Specification successfully returned.')
-    @api.response(500, 'Unexpected server error.', error)
+    @api.response(500, 'Unexpected server error.', web_model.error)
     def get(self):
         return json.dumps(api.__schema__)
 
 if __name__ == '__main__':
-    model.initialize()
+    db_model.initialize()
     app.run(host='0.0.0.0', port=80)

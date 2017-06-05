@@ -1,7 +1,7 @@
 import json
 from nose.tools import assert_equals, assert_is_not_none, assert_dict_equal, assert_in
 from app.datastore import app
-import app.model as model
+import app.db_model as model
 
 @given(u'I have access to the Wine API')
 def step_impl(context):
