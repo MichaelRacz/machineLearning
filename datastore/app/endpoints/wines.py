@@ -2,8 +2,8 @@ from flask import request
 from flask_restplus import Resource, reqparse
 from app.endpoints.api import api
 from app.web_model import initialize as initialize_web_model
-import app.wine_crud as wine_crud
-from app.wine_crud import UnknownRecordError
+import app.wine_domain.crud as wine_crud
+from app.wine_domain.crud import UnknownRecordError
 
 wines_ns = api.namespace('wines', description='API of wine datastore')
 web_model = initialize_web_model(api)
