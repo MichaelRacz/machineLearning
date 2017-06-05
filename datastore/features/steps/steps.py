@@ -78,7 +78,7 @@ def step_impl(context):
 
 @then(u'I receive an error indicating that there is no record with the given id')
 def step_impl(context):
-    error_message = context.response_content['errors']['id']
+    error_message = context.response_content['error_message']
     assert_in("No record with id '{}' found.".format(context.id), error_message)
 
 @then(u'I receive an error indicating that the id is malformed')

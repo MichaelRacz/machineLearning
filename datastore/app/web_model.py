@@ -24,8 +24,7 @@ def initialize(api):
         'id': fields.String(required=True)})
 
     error = api.model('Error', {
-        'code': fields.Integer(required=True),
-        'message': fields.String(required=True)})
+        'error_message': fields.String(required=True)})
 
     return WebModel(wine, classified_wine, wine_id, error)
 
