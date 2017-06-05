@@ -1,7 +1,7 @@
 from flask import request
 from flask_restplus import Resource, reqparse
-from app.endpoints.restplus import api
-from app.endpoints.model import initialize as initialize_web_model
+from app.api.restplus import api
+from app.api.model import initialize as initialize_web_model
 import app.wine_domain.crud as wine_crud
 from app.wine_domain.crud import UnknownRecordError
 
