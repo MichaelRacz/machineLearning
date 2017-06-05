@@ -2,7 +2,7 @@ import json
 from nose.tools import assert_equals, assert_is_not_none, assert_dict_equal, assert_in
 import app.wine_domain.model as domain_model
 from app.api.restplus import flask_app, api
-from app.api.wines import wines_ns
+from app.api.wines_endpoint import wines_ns
 
 api.add_namespace(wines_ns)
 
