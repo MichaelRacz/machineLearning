@@ -2,4 +2,4 @@ version: '3.0'
 services:
   datastore:
     environment:
-      DATASTORE_SETTINGS: 'config.prod.py'
+      DATASTORE_SETTINGS: '/app/config.prod.py'
