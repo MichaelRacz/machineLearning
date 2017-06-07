@@ -2,8 +2,7 @@ Feature: As a maintainer of the wine dataset
   I want to retrieve wine records of the dataset.
 
   Background:
-    Given I have access to the Wine API
-      And I have a valid wine record
+    Given I have a valid wine record
       And I POST it to the create_wine endpoint
 
   Scenario: Receive a wine record

@@ -11,7 +11,7 @@ def create(classified_wine):
 def delete(id):
     session = model.Session()
     wine = session.query(model.Wine).filter_by(id=id).first()
-    if(wine is None):
+    if wine is None:
         raise (UnknownRecordError(id))
     session.delete(wine)
     session.commit()
@@ -19,7 +19,7 @@ def delete(id):
 def retrieve(id):
     session = model.Session()
     wine = session.query(model.Wine).filter_by(id=id).first()
-    if(wine is None):
+    if wine is None:
         raise (UnknownRecordError(id))
     session.rollback()
     return wine
