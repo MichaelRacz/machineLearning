@@ -4,6 +4,7 @@ from app.api.restplus import api
 from app.api.model import initialize as initialize_web_model
 import app.wine_domain.crud as wine_crud
 from app.wine_domain.crud import UnknownRecordError
+from app.wine_domain.distributed_log import DistributedLogContext
 
 wines_ns = api.namespace('wines', description='API of wine datastore')
 web_model = initialize_web_model(api)
@@ -75,7 +76,7 @@ class Wines(Resource):
         """
         args = get_wine_arguments.parse_args()
         id = args['id']
-        wine_crud.delete(id)
+        wine_crud.delete(id, DistributedLogContext.get_log())
         return {}, 204
 
     @api.doc(
@@ -91,5 +92,5 @@ class Wines(Resource):
         Create wine
         """
         classified_wine = request.get_json(force=True)
-        id = wine_crud.create(classified_wine)
+        id = wine_crud.create(classified_wine, DistributedLogContext.get_log())
         return {'id': id}, 201

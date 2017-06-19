@@ -3,7 +3,8 @@ FROM python:3-alpine
 RUN pip install \
  flask \
  flask-restplus \
- SQLAlchemy
+ SQLAlchemy \
+ kafka-python
 
 ADD . /app
 ENV PYTHONPATH /app

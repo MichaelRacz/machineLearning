@@ -1,5 +1,7 @@
 import json
-from nose.tools import assert_equals, assert_is_not_none, assert_dict_equal, assert_in
+from nose.tools import assert_equals, assert_is_not_none, assert_dict_equal, assert_in, assert_true
+from app.api.restplus import flask_app
+import sys
 
 @given(u'I have a valid wine record')
 def step_impl(context):
@@ -114,7 +116,23 @@ def _delete_wine(context, id):
 
 @then(u'the HTTP status code is "{expected_status_code:d}"')
 def step_impl(context, expected_status_code):
-    assert_equals(context.response.status_code ,expected_status_code)
+    assert_equals(context.response.status_code, expected_status_code)
+
+@then(u'the creation is logged')
+def step_impl(context):
+    _assert_contains_message(context, b'create')
+
+@then(u'the deletion is logged')
+def step_impl(context):
+    _assert_contains_message(context, b'delete')
+
+def _assert_contains_message(context, message):
+    consumer = context.test_log_backend.create_consumer()
+    creation_messages = [message for message in consumer
+        if message is not None
+        and message.value is not None
+        and message.value == b'create']
+    assert_true(len(creation_messages) > 0)
 
 def _add_response_to_context(context, response):
     context.response = response
