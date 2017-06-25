@@ -8,7 +8,7 @@ def create(classified_wine, log):
     session = model.Session()
     session.add(wine)
     session.commit()
-    log.log_create(wine)
+    log.log_create(wine.id, classified_wine)
     return wine.id
 
 def delete(id, log):

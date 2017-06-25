@@ -1,5 +1,6 @@
 from pykafka import KafkaClient
 from app.api.restplus import flask_app
+import json
 
 class DistributedLog:
     def __enter__(self):
@@ -11,11 +12,22 @@ class DistributedLog:
     def __exit__(self, type, value, traceback):
         self._producer.__exit__(None, None, None)
 
-    def log_create(self, wine):
-        self._producer.produce(b'create')
+    def log_create(self, id, classified_wine):
+        event = {
+            'type': 'create',
+            'version': '1',
+            'id': id,
+            'classified_wine': classified_wine
+        }
+        self._producer.produce(json.dumps(event).encode('utf-8'))
 
     def log_delete(self, id):
-        self._producer.produce(b'delete')
+        event = {
+            'type': 'delete',
+            'version': '1',
+            'id': id
+        }
+        self._producer.produce(json.dumps(event).encode('utf-8'))
 
 class DistributedLogContext:
     _log = None
