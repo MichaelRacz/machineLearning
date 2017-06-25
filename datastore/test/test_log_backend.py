@@ -7,9 +7,11 @@ import json
 
 class TestLogBackend:
     def initialize(self):
-        process = self._execute(args = ['docker-compose',
-            '--file', 'docker-compose.dev.yml',
-            'up', '-d'])
+        if flask_app.config['ENVIRONMENT'] == 'DEV':
+            process = self._execute(args = ['docker-compose',
+                '--file', 'docker-compose.yml',
+                '--file', 'docker-compose.dev.yml',
+                'up', '-d'])
         #process = self._execute(
         #    args = ['docker', 'run',
         #        '-d',
@@ -46,9 +48,9 @@ class TestLogBackend:
         #process = self._execute(args = ['docker-compose',
         #    '--file', 'docker-compose.dev.yml',
         #    'down'])
-        shutdown_command = 'docker-compose --file docker-compose.dev.yml down'
-        #TODO: new process only in dev
-        self._execute_in_new_process(shutdown_command)
+        if flask_app.config['ENVIRONMENT'] == 'DEV':
+            shutdown_command = 'docker-compose --file docker-compose.yml --file docker-compose.dev.yml down'
+            self._execute_in_new_process(shutdown_command)
 
     def _execute(self, args):
         print('Running command: {}'.format(' '.join(args)))
@@ -69,4 +71,4 @@ class TestLogBackend:
         current process and 'gain' performance).
         """
         print('Running command: {}'.format(command))
-        Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+        Popen(command, shell=True) #, stdout=PIPE, stderr=PIPE)

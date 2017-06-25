@@ -1,5 +1,12 @@
 version: '3.0'
 services:
+  kafka:
+    expose:
+      - "9092"
+    environment:
+      KAFKA_CREATE_TOPICS: "wine_test:1:1"
   datastore:
     environment:
       DATASTORE_SETTINGS: '/app/config.test.py'
+      WINE_TOPIC: 'wine_test'
+      KAFKA_HOSTS: 'kafka:9092'

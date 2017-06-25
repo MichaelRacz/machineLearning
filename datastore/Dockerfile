@@ -1,10 +1,12 @@
 FROM python:3-alpine
 
+RUN apk add --no-cache musl-dev gcc
+
 RUN pip install \
  flask \
  flask-restplus \
  SQLAlchemy \
- kafka-python
+ pykafka
 
 ADD . /app
 ENV PYTHONPATH /app

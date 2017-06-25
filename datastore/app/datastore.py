@@ -1,4 +1,4 @@
-from app.endpoints.restplus import flask_app, api
+from app.api.restplus import flask_app, api
 from app.api.wines_endpoint import wines_ns
 from app.api.specification_endpoint import specification_ns
 import app.wine_domain.model as domain_model
