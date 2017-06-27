@@ -31,3 +31,6 @@ def retrieve(id):
 class UnknownRecordError(Exception):
     def __init__(self, id):
         self.message = "No record with id '{}' found.".format(id)
+
+    def __str__(self):
+        return self.message

@@ -5,6 +5,26 @@ from app.api.model import initialize as initialize_web_model
 import app.wine_domain.crud as wine_crud
 from app.wine_domain.crud import UnknownRecordError
 from app.wine_domain.distributed_log import DistributedLogContext
+from app.api.logger import logger
+import uuid
+from datetime import datetime
+
+def _handle_errors(function_name):
+    def _handle_errors_decorator(f):
+        def error_handling_f(*args, **kwargs):
+            request_id = uuid.uuid4().hex
+            try:
+                logger.info("{} begin call '{}', request id: {}".format(str(datetime.now()), function_name, request_id))
+                result = f(*args, **kwargs)
+                logger.info("{} end call '{}', request id: {}".format(str(datetime.now()), function_name, request_id))
+                return result
+            except Exception as error:
+                logger.error("{} failed call '{}', request id: {}, error message: {}"
+                    .format(str(datetime.now()), function_name, request_id, str(error)))
+                status_code = 404 if type(error) is UnknownRecordError else 500
+                return {'error_message': str(error)}, status_code
+        return error_handling_f
+    return _handle_errors_decorator
 
 wines_ns = api.namespace('wines', description='API of wine datastore')
 web_model = initialize_web_model(api)
@@ -14,31 +34,6 @@ get_wine_arguments.add_argument('id', type=int, location='args', required=True, 
 
 delete_wine_arguments = reqparse.RequestParser()
 delete_wine_arguments.add_argument('id', type=int, location='args', required=True, nullable=False)
-
-def handle_errors(f):
-    def error_handling_f(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except UnknownRecordError as error:
-            return {'error_message': error.message}, 404
-    return error_handling_f
-
-def _create_classified_wine(wine):
-    wine_web = { \
-        'alcohol': wine.alcohol, \
-        'malic_acid': wine.malic_acid,
-        'ash': wine.ash,
-        'alcalinity_of_ash': wine.alcalinity_of_ash,
-        'magnesium': wine.magnesium,
-        'total_phenols': wine.total_phenols,
-        'flavanoids': wine.flavanoids,
-        'nonflavanoid_phenols': wine.nonflavanoid_phenols,
-        'proanthocyanins': wine.proanthocyanins,
-        'color_intensity': wine.color_intensity,
-        'hue': wine.hue,
-        'odxxx_of_diluted_wines': wine.odxxx_of_diluted_wines,
-        'proline': wine.proline}
-    return {'wine_class': wine.wine_class, 'wine': wine_web}
 
 @wines_ns.route('/')
 class Wines(Resource):
@@ -50,7 +45,7 @@ class Wines(Resource):
     @api.response(200, 'Wine successfully returned.', web_model.classified_wine)
     @api.response(404, 'Unknown id.', web_model.error)
     @api.response(500, 'Unexpected server error.', web_model.error)
-    @handle_errors
+    @_handle_errors('foo')
     def get(self):
         """
         Retrieve wine
@@ -69,7 +64,7 @@ class Wines(Resource):
     @api.response(204, 'Wine successfully deleted.')
     @api.response(404, 'Unknown id.', web_model.error)
     @api.response(500, 'Unexpected server error.', web_model.error)
-    @handle_errors
+    @_handle_errors('foo')
     def delete(self):
         """
         Delete wine
@@ -86,7 +81,7 @@ class Wines(Resource):
     @api.expect(web_model.classified_wine, validate=True)
     @api.response(201, 'Wine successfully created.', web_model.wine_id)
     @api.response(500, 'Unexpected server error.', web_model.error)
-    @handle_errors
+    @_handle_errors('foo')
     def post(self):
         """
         Create wine
@@ -94,3 +89,20 @@ class Wines(Resource):
         classified_wine = request.get_json(force=True)
         id = wine_crud.create(classified_wine, DistributedLogContext.get_log())
         return {'id': id}, 201
+
+def _create_classified_wine(wine):
+    wine_web = { \
+        'alcohol': wine.alcohol, \
+        'malic_acid': wine.malic_acid,
+        'ash': wine.ash,
+        'alcalinity_of_ash': wine.alcalinity_of_ash,
+        'magnesium': wine.magnesium,
+        'total_phenols': wine.total_phenols,
+        'flavanoids': wine.flavanoids,
+        'nonflavanoid_phenols': wine.nonflavanoid_phenols,
+        'proanthocyanins': wine.proanthocyanins,
+        'color_intensity': wine.color_intensity,
+        'hue': wine.hue,
+        'odxxx_of_diluted_wines': wine.odxxx_of_diluted_wines,
+        'proline': wine.proline}
+    return {'wine_class': wine.wine_class, 'wine': wine_web}
