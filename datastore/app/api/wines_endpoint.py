@@ -4,7 +4,6 @@ from app.api.restplus import api
 from app.api.model import initialize as initialize_web_model
 import app.wine_domain.facade as wine_facade
 from app.wine_domain.database import UnknownRecordError
-from app.wine_domain.distributed_log import DistributedLogContext
 from app.api.logger import logger
 import uuid
 from datetime import datetime
@@ -113,7 +112,7 @@ class Wines(Resource):
         """
         args = get_wine_arguments.parse_args()
         id = args['id']
-        wine_facade.delete(id, DistributedLogContext.get_log())
+        wine_facade.delete(id)
         return {}, 204
 
     @api.doc(
@@ -127,7 +126,7 @@ class Wines(Resource):
         Create wine
         """
         classified_wine = request.get_json(force=True)
-        id = wine_facade.create(classified_wine, DistributedLogContext.get_log())
+        id = wine_facade.create(classified_wine)
         return {'id': id}, 201
 
 def _create_classified_wine(wine):

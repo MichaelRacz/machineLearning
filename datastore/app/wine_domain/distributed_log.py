@@ -39,7 +39,6 @@ class DistributedLogContext:
             DistributedLogContext._log = log
         return DistributedLogContext._log
 
-
     def free_log():
         if DistributedLogContext._log != None:
             DistributedLogContext._log.__exit__(None, None, None)
