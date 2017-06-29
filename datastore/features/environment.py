@@ -1,10 +1,10 @@
-import app.wine_domain.model as domain_model
+import app.wine_domain.database as database
 from app.api.restplus import flask_app, api
 from app.api.wines_endpoint import wines_ns
 from test.test_log_backend import TestLogBackend
 
 def before_all(context):
-    domain_model.initialize()
+    database.initialize()
     api.add_namespace(wines_ns)
     context.client = flask_app.test_client()
     context.wines_ns = '/v1/wines/'

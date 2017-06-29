@@ -27,3 +27,36 @@ class Wine(Base):
     hue = Column(Float())
     odxxx_of_diluted_wines = Column(Float())
     proline = Column(Integer())
+
+def create(classified_wine):
+    merged_wine = {**{'wine_class': classified_wine['wine_class']}, **classified_wine['wine']}
+    wine = Wine(**merged_wine)
+    session = Session()
+    session.add(wine)
+    session.commit()
+    return wine
+
+def retrieve(id):
+    session = Session()
+    wine = _get(id, session)
+    session.rollback()
+    return wine
+
+def delete(id):
+    session = Session()
+    wine = _get(id, session)
+    session.delete(wine)
+    session.commit()
+
+def _get(id, session):
+    wine = session.query(Wine).filter_by(id=id).first()
+    if wine is None:
+        raise (UnknownRecordError(id))
+    return wine
+
+class UnknownRecordError(Exception):
+    def __init__(self, id):
+        self.message = "No record with id '{}' found.".format(id)
+
+    def __str__(self):
+        return self.message

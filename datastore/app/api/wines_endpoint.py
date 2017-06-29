@@ -2,13 +2,14 @@ from flask import request
 from flask_restplus import Resource, reqparse
 from app.api.restplus import api
 from app.api.model import initialize as initialize_web_model
-import app.wine_domain.crud as wine_crud
-from app.wine_domain.crud import UnknownRecordError
+import app.wine_domain.facade as wine_facade
+from app.wine_domain.database import UnknownRecordError
 from app.wine_domain.distributed_log import DistributedLogContext
 from app.api.logger import logger
 import uuid
 from datetime import datetime
 from threading import Lock
+from werkzeug.exceptions import HTTPException
 
 def _handle_errors(function_name):
     def _handle_errors_decorator(f):
@@ -19,6 +20,10 @@ def _handle_errors(function_name):
                 result = f(*args, **kwargs)
                 logger.info("{} end call '{}', request id: {}".format(str(datetime.now()), function_name, request_id))
                 return result
+            except HTTPException as error:
+                logger.error("{} failed call '{}' (framework validation), request id: {}, error message: {}"
+                    .format(str(datetime.now()), function_name, request_id, str(error)))
+                raise
             except Exception as error:
                 logger.error("{} failed call '{}', request id: {}, error message: {}"
                     .format(str(datetime.now()), function_name, request_id, str(error)))
@@ -85,17 +90,14 @@ class Wines(Resource):
         id='get_wine',
         tags='Wines')
     @api.expect(get_wine_arguments, validate=True)
-    @api.response(200, 'Wine successfully returned.', web_model.classified_wine)
-    @api.response(404, 'Unknown id.', web_model.error)
-    @api.response(500, 'Unexpected server error.', web_model.error)
-    @_handle_errors('foo')
+    @_handle_errors('get_wine')
     def get(self):
         """
         Retrieve wine
         """
         args = get_wine_arguments.parse_args()
         id = args['id']
-        wine = wine_crud.retrieve(id)
+        wine = wine_facade.retrieve(id)
         classified_wine = _create_classified_wine(wine)
         return classified_wine, 200
 
@@ -104,17 +106,14 @@ class Wines(Resource):
         id='delete_wine',
         tags='Wines')
     @api.expect(delete_wine_arguments, validate=True)
-    @api.response(204, 'Wine successfully deleted.')
-    @api.response(404, 'Unknown id.', web_model.error)
-    @api.response(500, 'Unexpected server error.', web_model.error)
-    @_handle_errors('foo')
+    @_handle_errors('delete_wine')
     def delete(self):
         """
         Delete wine
         """
         args = get_wine_arguments.parse_args()
         id = args['id']
-        wine_crud.delete(id, DistributedLogContext.get_log())
+        wine_facade.delete(id, DistributedLogContext.get_log())
         return {}, 204
 
     @api.doc(
@@ -122,15 +121,13 @@ class Wines(Resource):
         id='create_wine',
         tags='Wines')
     @api.expect(web_model.classified_wine, validate=True)
-    @api.response(201, 'Wine successfully created.', web_model.wine_id)
-    @api.response(500, 'Unexpected server error.', web_model.error)
-    @_handle_errors('foo')
+    @_handle_errors('create_wine')
     def post(self):
         """
         Create wine
         """
         classified_wine = request.get_json(force=True)
-        id = wine_crud.create(classified_wine, DistributedLogContext.get_log())
+        id = wine_facade.create(classified_wine, DistributedLogContext.get_log())
         return {'id': id}, 201
 
 def _create_classified_wine(wine):
