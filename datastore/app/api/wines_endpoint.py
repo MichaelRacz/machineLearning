@@ -8,6 +8,7 @@ from app.api.logger import logger
 import uuid
 from datetime import datetime
 from werkzeug.exceptions import HTTPException
+from app.api.circuit_breaker import wines_circuit_breaker
 
 def _handle_errors(function_name):
     def _handle_errors_decorator(f):
@@ -27,8 +28,12 @@ def _handle_errors(function_name):
                     .format(str(datetime.now()), function_name, request_id, str(error)))
                 status_code = 404 if type(error) is UnknownRecordError else 500
                 return {'error_message': str(error)}, status_code
+        decorated_by_error_handler.append(f)
+        error_handling_f.__wrapped__ = f
         return error_handling_f
     return _handle_errors_decorator
+
+decorated_by_error_handler = []
 
 wines_ns = api.namespace('wines', description='API of wine datastore')
 web_model = initialize_web_model(api)
@@ -46,6 +51,7 @@ class Wines(Resource):
         id='get_wine',
         tags='Wines')
     @api.expect(get_wine_arguments, validate=True)
+    @wines_circuit_breaker.decorate
     @_handle_errors('get_wine')
     def get(self):
         """
@@ -62,6 +68,7 @@ class Wines(Resource):
         id='delete_wine',
         tags='Wines')
     @api.expect(delete_wine_arguments, validate=True)
+    @wines_circuit_breaker.decorate
     @_handle_errors('delete_wine')
     def delete(self):
         """
@@ -77,6 +84,7 @@ class Wines(Resource):
         id='create_wine',
         tags='Wines')
     @api.expect(web_model.classified_wine, validate=True)
+    @wines_circuit_breaker.decorate
     @_handle_errors('create_wine')
     def post(self):
         """

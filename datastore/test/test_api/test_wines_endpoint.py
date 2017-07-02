@@ -1,6 +1,6 @@
-from nose.tools import assert_equals, assert_true, assert_dict_equal, assert_is
+from nose.tools import assert_equals, assert_true, assert_dict_equal, assert_is, assert_in
 from testfixtures import LogCapture
-from app.api.wines_endpoint import _handle_errors
+from app.api.wines_endpoint import _handle_errors, Wines, decorated_by_error_handler
 from app.api.logger import logger
 from app.wine_domain.database import UnknownRecordError
 from werkzeug.exceptions import HTTPException
@@ -64,3 +64,13 @@ def _assert_failed_call(log):
     assert_true("begin call 'foo', request id:" in log.records[0].msg)
     assert_equals(log.records[1].levelname, 'ERROR')
     assert_true("failed call 'foo', request id:" in log.records[1].msg)
+
+def test_get_decorators():
+    _assert_decorators(Wines.get, 'get')
+    _assert_decorators(Wines.delete, 'delete')
+    _assert_decorators(Wines.post, 'post')
+
+def _assert_decorators(f, f_name):
+    assert_equals(f.__name__, 'decorated_circuit_breaker_f')
+    assert_equals(f.__wrapped__.__name__, 'error_handling_f')
+    assert_equals(f.__wrapped__.__wrapped__.__name__, f_name)

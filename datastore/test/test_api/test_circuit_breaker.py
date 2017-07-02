@@ -7,6 +7,19 @@ class TestCircuitBreaker:
     def setup(self):
         self.circuit_breaker = CircuitBreaker(2)
 
+    def test_initialize(self):
+        assert_equals(self.circuit_breaker.max_requests, 2)
+        assert_equals(self.circuit_breaker.open_requests, 0)
+        assert_equals(self.circuit_breaker.is_open, False)
+        assert_equals(self.circuit_breaker.reason, 'Service not initialized.')
+        assert_equals(self.circuit_breaker.status_code, 503)
+
+    def test_open(self):
+        self.circuit_breaker.open()
+        assert_equals(self.circuit_breaker.is_open, True)
+        assert_equals(self.circuit_breaker.reason, None)
+        assert_equals(self.circuit_breaker.status_code, None)
+
     def test_close(self):
         self.circuit_breaker.close('reason', 1337)
         result, status_code = self.circuit_breaker.decorate(lambda: 'dummy')()
@@ -14,6 +27,7 @@ class TestCircuitBreaker:
         assert_dict_equal(result, {'error_message': 'reason'})
 
     def test_decorate(self):
+        self.circuit_breaker.open()
         def decoratee(x, y = 'dummy'):
             assert_equals(x, 'x')
             assert_equals(y, 'z')
@@ -22,6 +36,7 @@ class TestCircuitBreaker:
         assert_equals(result, 'result')
 
     def test_decorate_too_many_requests(self):
+        self.circuit_breaker.open()
         wait = True
         def decoratee():
             while wait:
@@ -38,5 +53,8 @@ class TestCircuitBreaker:
             wait = False
             thread1.join(0.2)
             thread2.join(0.2)
-        result = self.circuit_breaker.decorate(lambda: 'request count is decreased')()
+        f = lambda: 'request count is decreased'
+        decorated_f = self.circuit_breaker.decorate(f)
+        result = decorated_f()
         assert_equals(result, 'request count is decreased')
+        assert_equals(decorated_f.__wrapped__, f)

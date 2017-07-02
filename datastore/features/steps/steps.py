@@ -2,6 +2,8 @@ import json
 from nose.tools import assert_equals, assert_is_not_none, assert_dict_equal, assert_in, assert_true
 from app.api.restplus import flask_app
 import sys
+from app.wine_domain.database import engine
+from app.wine_domain.synchronization import synchronize_datastore
 
 @given(u'I have a valid wine record')
 def step_impl(context):
@@ -95,11 +97,6 @@ def step_impl(context, id):
     context.id = id
     _get_wine(context, id)
 
-def _get_wine(context, id):
-    response = context.client \
-        .get('{}?id={}'.format(context.wines_ns, id))
-    _add_response_to_context(context, response)
-
 @when(u'I DELETE the record')
 def step_impl(context):
     _delete_wine(context, context.response_content['id'])
@@ -137,6 +134,66 @@ def step_impl(context):
     }
     _assert_contains_message(context, expected_event)
 
+@given(u'I have some create and delete entries logged')
+def step_impl(context):
+    _reset_database()
+    producer = context.test_log_backend.create_producer()
+    classified_wines = [
+        {'wine': _get_valid_wine(),
+        'wine_class': '1'},
+        {'wine': _get_valid_wine(),
+        'wine_class': '2'}]
+    events = [
+        _create_create_event(1, classified_wines[0]),
+        _create_create_event(2, classified_wines[1]),
+        _create_delete_event(2),
+        _create_create_event(3, classified_wines[0]),
+        _create_create_event(4, classified_wines[1]),
+        _create_delete_event(3)]
+    _produce_events(events, producer)
+    context.stored_wines = [
+        {'id': 1, 'classified_wine': classified_wines[0]},
+        {'id': 4, 'classified_wine': classified_wines[1]}]
+    context.deleted_wine_ids = [2, 3]
+
+def _reset_database():
+    engine.execute('DELETE FROM Wines')
+
+def _create_create_event(id, classified_wine):
+    return {
+        'type': 'create',
+        'version': '1',
+        'id': id,
+        'classified_wine': classified_wine
+    }
+
+def _create_delete_event(id):
+    return {
+        'type': 'delete',
+        'version': '1',
+        'id': id
+    }
+
+def _produce_events(events, producer):
+    for event in events:
+        producer.produce(json.dumps(event).encode('utf-8'))
+
+@when(u'the datastore is synchronized')
+def step_impl(context):
+    synchronize_datastore()
+
+@then(u'the create entries can be received')
+def step_impl(context):
+    for stored_wine in context.stored_wines:
+        _get_wine(context, stored_wine['id'])
+        assert_dict_equal(context.response_content, stored_wine['classified_wine'])
+
+@then(u'the delete entries cannot be received')
+def step_impl(context):
+    for id in context.deleted_wine_ids:
+        _get_wine(context, id)
+        assert_equals(context.response.status_code, 404)
+
 def _assert_contains_message(context, expected_message):
     consumer = context.test_log_backend.create_consumer()
     messages = [json.loads(message.value.decode('utf-8')) for message in consumer if message is not None]
@@ -145,6 +202,11 @@ def _assert_contains_message(context, expected_message):
         and message['id'] == expected_message['id']]
     assert_equals(1, len(matching_messages))
     assert_dict_equal(matching_messages[0], expected_message)
+
+def _get_wine(context, id):
+    response = context.client \
+        .get('{}?id={}'.format(context.wines_ns, id))
+    _add_response_to_context(context, response)
 
 def _add_response_to_context(context, response):
     context.response = response

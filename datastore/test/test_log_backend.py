@@ -12,6 +12,8 @@ class TestLogBackend:
                 '--file', 'docker-compose.yml',
                 '--file', 'docker-compose.dev.yml',
                 'up', '-d'])
+        self._client = KafkaClient(hosts=flask_app.config['KAFKA_HOSTS'])
+        self._topic = self._client.topics[flask_app.config['WINE_TOPIC'].encode('ascii')]
         #process = self._execute(
         #    args = ['docker', 'run',
         #        '-d',
@@ -32,10 +34,8 @@ class TestLogBackend:
         #flask_app.config['KAFKA_BROKER'] = self.kafka_socket
 
     def create_consumer(self):
-        client = KafkaClient(hosts=flask_app.config['KAFKA_HOSTS'])
-        topic = client.topics[flask_app.config['WINE_TOPIC'].encode('ascii')]
         # Move to config?
-        return topic.get_simple_consumer(consumer_timeout_ms=100,
+        return self._topic.get_simple_consumer(consumer_timeout_ms=100,
             auto_offset_reset=OffsetType.EARLIEST,
             reset_offset_on_start=False)
         #return KafkaConsumer(flask_app.config['WINE_TOPIC'],
@@ -43,6 +43,9 @@ class TestLogBackend:
         #    #api_version=(0,8,0),
         #    key_deserializer=lambda m: m.decode('utf-8'),
         #    value_deserializer=lambda m: json.loads(m.decode('utf-8')))
+
+    def create_producer(self):
+        return self._topic.get_sync_producer()
 
     def tear_down(self):
         #process = self._execute(args = ['docker-compose',

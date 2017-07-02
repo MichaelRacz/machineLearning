@@ -4,8 +4,17 @@ class CircuitBreaker:
     def __init__(self, max_requests):
         self.max_requests = max_requests
         self.open_requests = 0
-        self.is_open = True
         self.lock = Lock()
+        self.close('Service not initialized.', 503)
+
+    def open(self):
+        self.lock.acquire()
+        try:
+            self.is_open = True
+            self.reason = None
+            self.status_code = None
+        finally:
+            self.lock.release()
 
     def close(self, reason, status_code):
         self.lock.acquire()
@@ -17,7 +26,7 @@ class CircuitBreaker:
             self.lock.release()
 
     def decorate(self, f):
-        def decorated_f(*args, **kwargs):
+        def decorated_circuit_breaker_f(*args, **kwargs):
             can_execute = False
             self.lock.acquire()
             try:
@@ -40,7 +49,8 @@ class CircuitBreaker:
                     return {'error_message': self.reason}, self.status_code
                 else:
                     return {'error_message': 'Too many requests.'}, 429
-        return decorated_f
+        decorated_circuit_breaker_f.__wrapped__ = f
+        return decorated_circuit_breaker_f
 
 # TODO make configurable
 wines_circuit_breaker = CircuitBreaker(20)

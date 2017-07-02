@@ -28,9 +28,11 @@ class Wine(Base):
     odxxx_of_diluted_wines = Column(Float())
     proline = Column(Integer())
 
-def create(classified_wine):
+def create(classified_wine, id = None):
     merged_wine = {**{'wine_class': classified_wine['wine_class']}, **classified_wine['wine']}
     wine = Wine(**merged_wine)
+    if id is not None:
+        wine.id = id
     session = Session()
     session.add(wine)
     session.commit()

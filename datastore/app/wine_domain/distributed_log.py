@@ -1,6 +1,7 @@
 from pykafka import KafkaClient
 from app.api.restplus import flask_app
 import json
+from pykafka.common import OffsetType
 
 class DistributedLog:
     def __enter__(self):
@@ -11,6 +12,14 @@ class DistributedLog:
 
     def __exit__(self, type, value, traceback):
         self._producer.__exit__(None, None, None)
+
+    def read(self):
+        consumer = self._topic.get_simple_consumer(consumer_timeout_ms=100,
+            auto_offset_reset=OffsetType.EARLIEST,
+            reset_offset_on_start=False)
+        for message in consumer:
+            if message is not None:
+                yield json.loads(message.value.decode('utf-8'))
 
     def log_create(self, id, classified_wine):
         event = {
