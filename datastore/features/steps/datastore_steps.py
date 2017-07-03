@@ -2,16 +2,13 @@ import json
 from nose.tools import assert_equals, assert_is_not_none, assert_dict_equal, assert_in, assert_true
 from app.api.restplus import flask_app
 import sys
-from app.wine_domain.database import engine
 from app.wine_domain.synchronization import synchronize_datastore
+from features.steps.step_utilities import clear_database, post_wine_record, create_wine, create_classified_wine
 
 @given(u'I have a valid wine record')
 def step_impl(context):
     wine_class = '2'
-    wine_record = {
-        'wine': _get_valid_wine(),
-        'wine_class': wine_class}
-    context.wine_record = wine_record
+    context.wine_record = create_classified_wine(create_wine(), wine_class)
 
 @given(u'All wine record properties are set to "{value:d}"')
 def step_impl(context, value):
@@ -21,7 +18,7 @@ def step_impl(context, value):
 
 @given(u'I have a wine record without a wine class')
 def step_impl(context):
-    context.wine_record = {'wine': _get_valid_wine()}
+    context.wine_record = {'wine': create_wine()}
 
 @given(u'I have a wine record without a wine')
 def step_impl(context):
@@ -29,26 +26,18 @@ def step_impl(context):
 
 @given(u'I have a wine record with a wine without property "{property}"')
 def step_impl(context, property):
-    wine = _get_valid_wine()
+    wine = create_wine()
     del wine[property]
-    wine_record = {
-        'wine': wine,
-        'wine_class': '3'}
-    context.wine_record = wine_record
+    context.wine_record = create_classified_wine(wine, '3')
 
 @given(u'I have a wine record with a wine class "{wine_class}"')
 def step_impl(context, wine_class):
-    wine_record = {
-        'wine': _get_valid_wine(),
-        'wine_class': wine_class}
-    context.wine_record = wine_record
+    context.wine_record = create_classified_wine(create_wine(), wine_class)
 
 @given(u'I POST it to the create_wine endpoint')
 @when(u'I POST it to the create_wine endpoint')
 def step_impl(context):
-    response = context.client.post(context.wines_ns,
-        data=json.dumps(context.wine_record),
-        headers={'content-type':'application/json'})
+    response = post_wine_record(context, context.wine_record)
     _add_response_to_context(context, response)
 
 @then(u'I receive the id of created wine record')
@@ -136,13 +125,11 @@ def step_impl(context):
 
 @given(u'I have some create and delete entries logged')
 def step_impl(context):
-    _reset_database()
+    clear_database()
     producer = context.test_log_backend.create_producer()
     classified_wines = [
-        {'wine': _get_valid_wine(),
-        'wine_class': '1'},
-        {'wine': _get_valid_wine(),
-        'wine_class': '2'}]
+        create_classified_wine(create_wine(), '1'),
+        create_classified_wine(create_wine(), '2')]
     events = [
         _create_create_event(1, classified_wines[0]),
         _create_create_event(2, classified_wines[1]),
@@ -155,9 +142,6 @@ def step_impl(context):
         {'id': 1, 'classified_wine': classified_wines[0]},
         {'id': 4, 'classified_wine': classified_wines[1]}]
     context.deleted_wine_ids = [2, 3]
-
-def _reset_database():
-    engine.execute('DELETE FROM Wines')
 
 def _create_create_event(id, classified_wine):
     return {
@@ -213,19 +197,3 @@ def _add_response_to_context(context, response):
     response_data = response.get_data(as_text=True)
     if(response_data != ''):
         context.response_content = json.loads(response_data)
-
-def _get_valid_wine():
-    return {
-        'alcohol': 0.0,
-        'malic_acid': 1.1,
-        'ash': 2.2,
-        'alcalinity_of_ash': 3.3,
-        'magnesium':  5,
-        'total_phenols': 6.6,
-        'flavanoids': 7.7,
-        'nonflavanoid_phenols': 8.8,
-        'proanthocyanins': 9.9,
-        'color_intensity': 10.1,
-        'hue': 11.1,
-        'odxxx_of_diluted_wines': 12.1,
-        'proline': 13}

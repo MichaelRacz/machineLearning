@@ -1,6 +1,6 @@
 from nose.tools import assert_equals, assert_true, assert_dict_equal, assert_is, assert_in
 from testfixtures import LogCapture
-from app.api.wines_endpoint import _handle_errors, Wines, decorated_by_error_handler
+from app.api.wines_endpoint import _handle_errors, Wines
 from app.api.logger import logger
 from app.wine_domain.database import UnknownRecordError
 from werkzeug.exceptions import HTTPException

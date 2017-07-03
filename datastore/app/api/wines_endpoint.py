@@ -1,7 +1,6 @@
 from flask import request
 from flask_restplus import Resource, reqparse
-from app.api.restplus import api
-from app.api.model import initialize as initialize_web_model
+from app.api.restplus import api, web_model
 import app.wine_domain.facade as wine_facade
 from app.wine_domain.database import UnknownRecordError
 from app.api.logger import logger
@@ -28,21 +27,17 @@ def _handle_errors(function_name):
                     .format(str(datetime.now()), function_name, request_id, str(error)))
                 status_code = 404 if type(error) is UnknownRecordError else 500
                 return {'error_message': str(error)}, status_code
-        decorated_by_error_handler.append(f)
         error_handling_f.__wrapped__ = f
         return error_handling_f
     return _handle_errors_decorator
-
-decorated_by_error_handler = []
-
-wines_ns = api.namespace('wines', description='API of wine datastore')
-web_model = initialize_web_model(api)
 
 get_wine_arguments = reqparse.RequestParser()
 get_wine_arguments.add_argument('id', type=int, location='args', required=True, nullable=False)
 
 delete_wine_arguments = reqparse.RequestParser()
 delete_wine_arguments.add_argument('id', type=int, location='args', required=True, nullable=False)
+
+wines_ns = api.namespace('wines', description='API of wine datastore')
 
 @wines_ns.route('/')
 class Wines(Resource):
