@@ -3,6 +3,7 @@ Feature: As an operator of the datastore
   reading all entries of the distributed log
   and applying them.
 
+  @needs_state_reset
   Scenario: Apply existing log entries
     Given I have some create and delete entries logged
     When the datastore is synchronized

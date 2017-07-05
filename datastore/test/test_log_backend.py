@@ -13,7 +13,6 @@ class TestLogBackend:
                 '--file', 'docker-compose.dev.yml',
                 'up', '-d'])
         self._client = KafkaClient(hosts=flask_app.config['KAFKA_HOSTS'])
-        self._topic = self._client.topics[flask_app.config['WINE_TOPIC'].encode('ascii')]
         #process = self._execute(
         #    args = ['docker', 'run',
         #        '-d',
@@ -33,9 +32,18 @@ class TestLogBackend:
         #self.kafka_socket = '{}:9092'.format(container_ip)
         #flask_app.config['KAFKA_BROKER'] = self.kafka_socket
 
+    def reset_topic(self):
+        command = ("docker run --rm --net=host wurstmeister/kafka "
+            "/bin/bash -c 'kafka-topics.sh --delete --topic {0} --zookeeper localhost:2181; "
+            "kafka-topics.sh --create --topic {0} --partitions 1 --replication-factor 1 --zookeeper localhost:2181'"
+            ).format(flask_app.config['WINE_TOPIC'])
+        print("RUNNING:" + command)
+        run(command, shell=True)
+
     def create_consumer(self):
+        topic = self._client.topics[flask_app.config['WINE_TOPIC'].encode('ascii')]
         # Move to config?
-        return self._topic.get_simple_consumer(consumer_timeout_ms=100,
+        return topic.get_simple_consumer(consumer_timeout_ms=100,
             auto_offset_reset=OffsetType.EARLIEST,
             reset_offset_on_start=False)
         #return KafkaConsumer(flask_app.config['WINE_TOPIC'],
@@ -45,7 +53,8 @@ class TestLogBackend:
         #    value_deserializer=lambda m: json.loads(m.decode('utf-8')))
 
     def create_producer(self):
-        return self._topic.get_sync_producer()
+        topic = self._client.topics[flask_app.config['WINE_TOPIC'].encode('ascii')]
+        return topic.get_sync_producer()
 
     def tear_down(self):
         #process = self._execute(args = ['docker-compose',
@@ -56,7 +65,6 @@ class TestLogBackend:
             self._execute_in_new_process(shutdown_command)
 
     def _execute(self, args):
-        print('Running command: {}'.format(' '.join(args)))
         process = run(
             args = args,
             universal_newlines = True)#,

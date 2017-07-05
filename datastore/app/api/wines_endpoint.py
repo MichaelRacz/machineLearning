@@ -20,7 +20,7 @@ def _handle_errors(function_name):
                 return result
             except HTTPException as error:
                 logger.error("{} failed call '{}' (framework validation), request id: {}, error message: {}"
-                    .format(str(datetime.now()), function_name, request_id, str(error)))
+                    .format(str(datetime.now()), function_name, request_id, repr(error)))
                 raise
             except Exception as error:
                 logger.error("{} failed call '{}', request id: {}, error message: {}"

@@ -3,7 +3,7 @@ from nose.tools import assert_equals, assert_is_not_none, assert_dict_equal, ass
 from app.api.restplus import flask_app
 import sys
 from app.wine_domain.synchronization import synchronize_datastore
-from features.steps.step_utilities import clear_database, post_wine_record, create_wine, create_classified_wine
+from features.steps.step_utilities import post_wine_record, create_wine, create_classified_wine
 
 @given(u'I have a valid wine record')
 def step_impl(context):
@@ -125,7 +125,6 @@ def step_impl(context):
 
 @given(u'I have some create and delete entries logged')
 def step_impl(context):
-    clear_database()
     producer = context.test_log_backend.create_producer()
     classified_wines = [
         create_classified_wine(create_wine(), '1'),
