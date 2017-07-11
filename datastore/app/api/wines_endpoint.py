@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime
 from werkzeug.exceptions import HTTPException
 from app.api.circuit_breaker import wines_circuit_breaker
+import traceback
 
 def _handle_errors(function_name):
     def _handle_errors_decorator(f):
@@ -23,8 +24,9 @@ def _handle_errors(function_name):
                     .format(str(datetime.now()), function_name, request_id, repr(error)))
                 raise
             except Exception as error:
+                detailed_message = '{}: {}'.format(repr(error), traceback.format_tb(error.__traceback__))
                 logger.error("{} failed call '{}', request id: {}, error message: {}"
-                    .format(str(datetime.now()), function_name, request_id, str(error)))
+                    .format(str(datetime.now()), function_name, request_id, detailed_message))
                 status_code = 404 if type(error) is UnknownRecordError else 500
                 return {'error_message': str(error)}, status_code
         error_handling_f.__wrapped__ = f
@@ -54,8 +56,7 @@ class Wines(Resource):
         """
         args = get_wine_arguments.parse_args()
         id = args['id']
-        wine = wine_facade.retrieve(id)
-        classified_wine = _create_classified_wine(wine)
+        classified_wine = wine_facade.retrieve(id)
         return classified_wine, 200
 
     @api.doc(
@@ -88,20 +89,3 @@ class Wines(Resource):
         classified_wine = request.get_json(force=True)
         id = wine_facade.create(classified_wine)
         return {'id': id}, 201
-
-def _create_classified_wine(wine):
-    wine_web = { \
-        'alcohol': wine.alcohol, \
-        'malic_acid': wine.malic_acid,
-        'ash': wine.ash,
-        'alcalinity_of_ash': wine.alcalinity_of_ash,
-        'magnesium': wine.magnesium,
-        'total_phenols': wine.total_phenols,
-        'flavanoids': wine.flavanoids,
-        'nonflavanoid_phenols': wine.nonflavanoid_phenols,
-        'proanthocyanins': wine.proanthocyanins,
-        'color_intensity': wine.color_intensity,
-        'hue': wine.hue,
-        'odxxx_of_diluted_wines': wine.odxxx_of_diluted_wines,
-        'proline': wine.proline}
-    return {'wine_class': wine.wine_class, 'wine': wine_web}

@@ -4,21 +4,21 @@ import app.api.circuit_breaker as circuit_breaker
 
 #todo rename, does more than a facade should
 def create(classified_wine):
-    wine = database.create(classified_wine)
+    id = database.create(classified_wine)
     try:
         log = DistributedLogContext.get_log()
-        log.log_create(wine.id, classified_wine)
+        log.log_create(id, classified_wine)
     except Exception as error:
         try:
             database.delete(wine.id)
         except Exception:
             circuit_breaker.wines_circuit_breaker.close(_distributed_log_message, 500)
-        raise WineDomainError(_distributed_log_message) from error
-    return wine.id
+        raise WineDomainError(_distributed_log_message, error) from error
+    return id
 
 def retrieve(id):
-    wine = database.retrieve(id)
-    return wine
+    classified_wine = database.retrieve(id)
+    return classified_wine
 
 def delete(id):
     database.delete(id)
@@ -27,13 +27,18 @@ def delete(id):
         log.log_delete(id)
     except Exception as error:
         circuit_breaker.wines_circuit_breaker.close(_distributed_log_message, 500)
-        raise WineDomainError(_distributed_log_message) from error
+        raise WineDomainError(_distributed_log_message, error) from error
 
 _distributed_log_message = 'Failed to propagate to the distributed log.'
 
 class WineDomainError(Exception):
-    def __init__(self, message):
+    def __init__(self, message, inner_error=None):
         self.message = message
+        self.inner_error = inner_error
 
     def __str__(self):
         return self.message
+
+    def __repr__(self):
+        inner_error_repr = repr(self.inner_error) if self.inner_error is not None else None
+        return "WineDomainError ('{}'). Inner error: {}".format(self.message, inner_error_repr)

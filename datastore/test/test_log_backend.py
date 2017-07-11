@@ -35,7 +35,9 @@ class TestLogBackend:
     def reset_topic(self):
         command = ("docker run --rm --net=host wurstmeister/kafka "
             "/bin/bash -c 'kafka-topics.sh --delete --topic {0} --zookeeper localhost:2181; "
-            "kafka-topics.sh --create --topic {0} --partitions 1 --replication-factor 1 --zookeeper localhost:2181'"
+            "if [ $? -eq 0 ]; then "
+            "kafka-topics.sh --create --topic {0} --partitions 1 --replication-factor 1 --zookeeper localhost:2181; "
+            "fi'"
             ).format(flask_app.config['WINE_TOPIC'])
         print("RUNNING:" + command)
         run(command, shell=True)
