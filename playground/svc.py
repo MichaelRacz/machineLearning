@@ -1,8 +1,10 @@
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn import svm
-from load_wine import load_wine
 import classification
+import numpy as np
+from random import random
+
 
 """
 Dependencies:
@@ -109,6 +111,24 @@ def create_nu_svc_classifier(training_set, training_set_classes):
 
     classification.fit_classifier(classifier, training_set, training_set_classes)
     return classifier
+
+def load_wine():
+    f = open("/home/yumyumfish/machineLearning/playground/wine.data")
+    data = np.loadtxt(f, delimiter=',')
+    X = data[:, 1:]
+    y = data[:, 0]
+    training_set = []
+    training_set_classes = []
+    test_set = []
+    test_set_classes = []
+    for i in range(0, len(data)):
+        if random() < 0.7:
+            training_set.append(X[i])
+            training_set_classes.append(y[i])
+        else:
+            test_set.append(X[i])
+            test_set_classes.append(y[i])
+    return training_set, training_set_classes, test_set, test_set_classes
 
 if __name__ == '__main__':
     training_set, training_set_classes, test_set, test_set_classes = load_wine()
