@@ -31,6 +31,7 @@ class Wine(Base):
 
 def create(classified_wine, id = None):
     merged_wine = {**{'wine_class': classified_wine['wine_class']}, **classified_wine['wine']}
+    # TODO: Isolation Level
     with _session_scope() as session:
         wine = Wine(**merged_wine)
         if id is not None:

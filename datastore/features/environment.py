@@ -6,6 +6,7 @@ from test.test_log_backend import TestLogBackend
 from app.api.circuit_breaker import wines_circuit_breaker
 from features.steps.step_utilities import clear_database
 from app.wine_domain.distributed_log import DistributedLogContext
+from app.wine_domain.synchronization import synchronize_datastore
 
 def before_all(context):
     database.initialize()
@@ -27,3 +28,10 @@ def before_tag(context, tag):
         clear_database()
         context.test_log_backend.reset_topic()
         DistributedLogContext.free_log()
+    if tag == 'log_synchronization':
+        context.synchronization_scope = synchronize_datastore()
+        context.synchronization_scope.__enter__()
+
+def after_tag(context, tag):
+    if tag == 'log_synchronization':
+        context.synchronization_scope.__exit__(None, None, None)

@@ -4,8 +4,8 @@ Feature: As an operator of the datastore
   and applying them.
 
   @needs_state_reset
-  Scenario: Apply existing log entries
-    Given I have some create and delete entries logged
-    When the datastore is synchronized
+  @log_synchronization
+  Scenario: Synchronize log entries
+    When I log some create and delete entries
     Then the create entries can be received
       And the delete entries cannot be received

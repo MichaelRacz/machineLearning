@@ -2,7 +2,6 @@ import json
 from nose.tools import assert_equals, assert_is_not_none, assert_dict_equal, assert_in, assert_true
 from app.api.restplus import flask_app
 import sys
-from app.wine_domain.synchronization import synchronize_datastore
 from features.steps.step_utilities import post_wine_record, create_wine, create_classified_wine
 
 @given(u'I have a valid wine record')
@@ -123,7 +122,7 @@ def step_impl(context):
     }
     _assert_contains_message(context, expected_event)
 
-@given(u'I have some create and delete entries logged')
+@when(u'I log some create and delete entries')
 def step_impl(context):
     producer = context.test_log_backend.create_producer()
     classified_wines = [
@@ -160,10 +159,6 @@ def _create_delete_event(id):
 def _produce_events(events, producer):
     for event in events:
         producer.produce(json.dumps(event).encode('utf-8'))
-
-@when(u'the datastore is synchronized')
-def step_impl(context):
-    synchronize_datastore()
 
 @then(u'the create entries can be received')
 def step_impl(context):
