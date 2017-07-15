@@ -9,7 +9,7 @@ def step_impl(context):
     training_set = []
     context.test_set = []
     for record in wine_data:
-        if random() > 0.66:
+        if random() < 0.7:
             training_set.append(record)
         else:
             context.test_set.append(record)

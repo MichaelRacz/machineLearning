@@ -29,7 +29,6 @@ class Wine(Base):
     odxxx_of_diluted_wines = Column(Float())
     proline = Column(Integer())
 
-# TODO methods are assymetric
 def create(classified_wine, id = None):
     merged_wine = {**{'wine_class': classified_wine['wine_class']}, **classified_wine['wine']}
     with _session_scope() as session:
@@ -63,8 +62,9 @@ def _get(id, session):
 def read_all():
     with _session_scope() as session:
         wines = session.query(Wine)
+        classified_wines = [_create_classified_wine(wine) for wine in wines]
         session.rollback()
-        return wines
+        return classified_wines
 
 @contextmanager
 def _session_scope():
