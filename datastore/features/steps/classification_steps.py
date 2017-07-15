@@ -22,6 +22,13 @@ def step_impl(context):
 
 @when(u'I classify the test set using the SVC algorithm')
 def step_impl(context):
+    classify(context, context.svc_ns)
+
+@when(u'I classify the test set using the Nearest Neighbor algorithm')
+def step_impl(context):
+    classify(context, context.nearest_neighbor_ns)
+
+def classify(context, namespace):
     classification_results = []
     for record in context.test_set:
         wine = _extract_wine(record)

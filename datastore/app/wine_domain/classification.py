@@ -22,19 +22,27 @@ def initialize_svc_classifier():
         classifiers['svc'] = ClassifierAdapter(classifier)
     return classifiers['svc']
 
+def initialize_nearest_neighbor_classifier():
+    global classifiers
+    if 'nearest_neighbor' not in classifiers:
+        training_set, training_set_classes = _load_training_set()
+        scaled_training_set = _scale_training_set(training_set)
+        classifier = _create_nearest_neighbor_classifier()
+        _fit_classifier(classifier, scaled_training_set, training_set_classes)
+        classifiers['nearest_neighbor'] = ClassifierAdapter(classifier)
+    return classifiers['nearest_neighbor']
+
 def _load_training_set():
     training_set = []
     training_set_classes = []
     for classified_wine in database.read_all():
-        print('loaded: {}, class {}'.format(str(_convert_to_list(classified_wine['wine'])), classified_wine['wine_class']))
         training_set.append(_convert_to_list(classified_wine['wine']))
         training_set_classes.append(classified_wine['wine_class'])
     return array(training_set), array(training_set_classes)
 
 def _scale_training_set(training_set):
-    return preprocessing.normalize(training_set)
-    #scaler = preprocessing.StandardScaler().fit(training_set)
-    #return scaler.transform(training_set)
+    scaler = preprocessing.StandardScaler().fit(training_set)
+    return scaler.transform(training_set)
 
 def _create_svc_classifier():
     C = [10 ** i for i in range(-2, 3)]
@@ -49,6 +57,18 @@ def _create_svc_classifier():
         n_jobs=n_jobs, pre_dispatch=pre_dispatch, cv=5)
     return classifier
 
+def _create_nearest_neighbor_classifier():
+    common_parameters = {
+        'n_neighbors': range(2, 30),
+        'weights': ['uniform', 'distance'],
+        'algorithm': ['ball_tree', 'kd_tree', 'brute']}
+    hyper_parameter_grid = [
+        {**common_parameters, **{'metric': ['manhattan', 'euclidean', 'chebyshev']}},
+        {**common_parameters, **{'metric': ['minkowski'], 'p': [3, 4]}}]
+    classifier = GridSearchCV(neighbors.KNeighborsClassifier(), hyper_parameter_grid, scoring='accuracy',
+        n_jobs=n_jobs, pre_dispatch=pre_dispatch, cv=5)
+    return classifier
+
 def _fit_classifier(classifier, training_set, training_set_classes):
     classifier.fit(training_set, training_set_classes)
     logger.info('initialized classifier with params: {}'.format(classifier.best_params_))
@@ -59,9 +79,8 @@ class ClassifierAdapter:
 
     def predict_class(self, wine):
         wine_list = array(_convert_to_list(wine)).reshape(1, -1)
-        print('predicting {}'.format(wine_list))
+        wine_list = wine_list
         prediction = self.classifier.predict(wine_list)
-        print('prediction: {}'.format(str(prediction)))
         predicted_class = prediction[0]
         return predicted_class
 
@@ -80,13 +99,10 @@ def _convert_to_list(wine_dict):
         wine_dict['hue'],
         wine_dict['odxxx_of_diluted_wines'],
         wine_dict['proline']]
-    #sorted_keys = sorted(wine_dict)
-    #return [wine_dict[key] for key in sorted_keys]
 
 def initialize(training_set, training_set_classes):
     global classifiers
     if 'svc' not in classifiers:
-        #scaled_training_set = _scale_training_set(training_set)
         classifier = _create_svc_classifier()
         _fit_classifier(classifier, training_set, training_set_classes)
         classifiers['svc'] = ClassifierAdapter(classifier)

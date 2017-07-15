@@ -14,6 +14,7 @@ def before_all(context):
     context.client = flask_app.test_client()
     context.wines_ns = '/v1/wines/'
     context.svc_ns = '/v1/wines/classification/svc/'
+    context.nearest_neighbor_ns = '/v1/wines/classification/nearest_neighbor/'
     context.test_log_backend = TestLogBackend()
     context.test_log_backend.initialize()
     wines_circuit_breaker.open()
