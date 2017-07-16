@@ -5,7 +5,6 @@ import app.wine_domain.facade as wine_facade
 from app.api.error_handler import handle_errors
 from app.api.circuit_breaker import CircuitBreaker
 
-
 get_wine_arguments = reqparse.RequestParser()
 get_wine_arguments.add_argument('id', type=int, location='args', required=True, nullable=False)
 

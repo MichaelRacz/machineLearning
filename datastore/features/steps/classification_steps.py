@@ -32,7 +32,7 @@ def classify(context, namespace):
     classification_results = []
     for record in context.test_set:
         wine = _extract_wine(record)
-        response = context.client.post(context.svc_ns,
+        response = context.client.post(namespace,
             data=json.dumps(wine),
             headers={'content-type':'application/json'})
         assert_equals(response.status_code, 200)

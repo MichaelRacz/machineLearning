@@ -2,8 +2,11 @@ from app.api.restplus import api, web_model
 from flask_restplus import Resource
 from app.wine_domain.classification import initialize_svc_classifier
 from flask import request
+from app.api.error_handler import handle_errors
+from app.api.circuit_breaker import CircuitBreaker
 
 svc_ns = api.namespace('wines/classification/svc', description='API of SVC classification')
+svc_circuit_breaker = CircuitBreaker(20)
 
 @svc_ns.route('/')
 class SVC(Resource):
@@ -12,8 +15,8 @@ class SVC(Resource):
         id='classify_svc',
         tags='Wines')
     @api.expect(web_model.wine, validate=True)
-    #@wines_circuit_breaker.decorate
-    #@_handle_errors('get_wine')
+    @svc_circuit_breaker.decorate
+    @handle_errors('classify_svc')
     def post(self):
         wine = request.get_json(force=True)
         classifier = initialize_svc_classifier()

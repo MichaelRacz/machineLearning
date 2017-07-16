@@ -1,5 +1,5 @@
 from sklearn.model_selection import GridSearchCV
-from sklearn import svm, preprocessing
+from sklearn import svm, neighbors, preprocessing
 import app.wine_domain.database as database
 from app.api.logger import logger
 from numpy import array
@@ -26,10 +26,10 @@ def initialize_nearest_neighbor_classifier():
     global classifiers
     if 'nearest_neighbor' not in classifiers:
         training_set, training_set_classes = _load_training_set()
-        scaled_training_set = _scale_training_set(training_set)
+        scaled_training_set, scaler = _scale_training_set(training_set)
         classifier = _create_nearest_neighbor_classifier()
         _fit_classifier(classifier, scaled_training_set, training_set_classes)
-        classifiers['nearest_neighbor'] = ClassifierAdapter(classifier)
+        classifiers['nearest_neighbor'] = ClassifierAdapter(classifier, scaler)
     return classifiers['nearest_neighbor']
 
 def _load_training_set():
@@ -42,7 +42,7 @@ def _load_training_set():
 
 def _scale_training_set(training_set):
     scaler = preprocessing.StandardScaler().fit(training_set)
-    return scaler.transform(training_set)
+    return scaler.transform(training_set), scaler
 
 def _create_svc_classifier():
     C = [10 ** i for i in range(-2, 3)]
@@ -74,13 +74,15 @@ def _fit_classifier(classifier, training_set, training_set_classes):
     logger.info('initialized classifier with params: {}'.format(classifier.best_params_))
 
 class ClassifierAdapter:
-    def __init__(self, classifier):
-        self.classifier = classifier
+    def __init__(self, classifier, scaler=None):
+        self._classifier = classifier
+        self._scaler = scaler
 
     def predict_class(self, wine):
         wine_list = array(_convert_to_list(wine)).reshape(1, -1)
-        wine_list = wine_list
-        prediction = self.classifier.predict(wine_list)
+        if self._scaler is not None:
+            wine_list = self._scaler.transform(wine_list)
+        prediction = self._classifier.predict(wine_list)
         predicted_class = prediction[0]
         return predicted_class
 
