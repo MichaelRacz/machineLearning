@@ -23,16 +23,16 @@ def test_create_lets_database_errors_pass_through():
 
 def test_create_deletes_when_distributed_log_throws():
     initial_create = database.create
-    database.create = lambda x: namedtuple('Stub', 'id')('1234')
+    database.create = lambda x: '1234'
     initial_log = DistributedLogContext._log
     create_error = Exception('message')
     DistributedLogContext._log = _LogStub(create_error)
     initial_delete = database.delete
-    deleted = False
+    deleted_in_db = False
     def delete(id):
         assert_equals(id, '1234')
-        nonlocal deleted
-        deleted = True
+        nonlocal deleted_in_db
+        deleted_in_db = True
     database.delete = delete
     try:
         error = None
@@ -41,7 +41,8 @@ def test_create_deletes_when_distributed_log_throws():
         except facade.WineDomainError as domain_error:
             error = domain_error
         assert_equals(error.message, 'Failed to propagate to the distributed log.')
-        assert_true(deleted)
+        assert_is(error.inner_error, create_error)
+        assert_true(deleted_in_db)
     finally:
         database.create = initial_create
         DistributedLogContext._log = initial_log
@@ -49,7 +50,7 @@ def test_create_deletes_when_distributed_log_throws():
 
 def test_create_closes_circuit_breaker_when_compensation_fails():
     initial_create = database.create
-    database.create = lambda x: namedtuple('Stub', 'id')('1234')
+    database.create = lambda x: '1234'
     initial_log = DistributedLogContext._log
     create_error = Exception('dummy')
     DistributedLogContext._log = _LogStub(create_error)
@@ -67,6 +68,7 @@ def test_create_closes_circuit_breaker_when_compensation_fails():
         except facade.WineDomainError as domain_error:
             error = domain_error
         assert_equals(error.message, 'Failed to propagate to the distributed log.')
+        assert_is(error.inner_error, create_error)
         assert_true(circuit_breaker.wines_circuit_breaker.is_closed)
     finally:
         database.create = initial_create
