@@ -15,28 +15,28 @@ class ClassifierFactory:
         self._lock = Lock()
 
     def create_svc_classifier(self):
-        if self._svc is None:
-            self._lock.acquire()
-            try:
+        self._lock.acquire()
+        try:
+            if self._svc is None:
                 training_set, training_set_classes = self._load_training_set()
                 classifier = self._create_svc_classifier()
                 self._fit_classifier(classifier, training_set, training_set_classes)
                 self._svc = ClassifierAdapter(classifier)
-            finally:
-                self._lock.release()
+        finally:
+            self._lock.release()
         return self._svc
 
     def create_nearest_neighbor_classifier(self):
-        if self._nearest_neighbor is None:
-            self._lock.acquire()
-            try:
+        self._lock.acquire()
+        try:
+            if self._nearest_neighbor is None:
                 training_set, training_set_classes = self._load_training_set()
                 scaled_training_set, scaler = self._scale_training_set(training_set)
                 classifier = self._create_nearest_neighbor_classifier()
                 self._fit_classifier(classifier, scaled_training_set, training_set_classes)
                 self._nearest_neighbor = ClassifierAdapter(classifier, scaler)
-            finally:
-                self._lock.release()
+        finally:
+            self._lock.release()
         return self._nearest_neighbor
 
     def _load_training_set(self):
