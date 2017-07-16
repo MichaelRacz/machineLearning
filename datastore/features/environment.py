@@ -1,9 +1,8 @@
 import app.wine_domain.database as database
 from app.api.restplus import flask_app, api
-from app.api.wines_endpoint import wines_ns
+from app.api.wines_endpoint import wines_ns, wines_circuit_breaker
 from app.api.svc_classification_endpoint import svc_ns
 from test.test_log_backend import TestLogBackend
-from app.api.circuit_breaker import wines_circuit_breaker
 from features.steps.step_utilities import clear_database
 from app.wine_domain.distributed_log import DistributedLogContext
 from app.wine_domain.synchronization import synchronize_datastore
