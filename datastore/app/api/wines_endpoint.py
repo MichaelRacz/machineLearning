@@ -12,7 +12,6 @@ delete_wine_arguments = reqparse.RequestParser()
 delete_wine_arguments.add_argument('id', type=int, location='args', required=True, nullable=False)
 
 wines_ns = api.namespace('wines', description='API of wine datastore')
-# TODO make configurable
 wines_circuit_breaker = CircuitBreaker(20)
 
 @wines_ns.route('/')
