@@ -15,17 +15,13 @@ def initialize(api):
         'hue': fields.Float(required=True, min=0.0),
         'odxxx_of_diluted_wines': fields.Float(required=True, min=0.0, description='description: OD280/OD315 of diluted wines'),
         'proline': fields.Integer(required=True, min=0)})
-
     classified_wine = api.model('ClassifiedWine', {
         'wine': fields.Nested(wine, required=True),
         'wine_class': fields.String(required=True, enum=['1', '2', '3'])})
-
     wine_id = api.model('WineId', {
         'id': fields.String(required=True)})
-
     error = api.model('Error', {
         'error_message': fields.String(required=True)})
-
     return WebModel(wine, classified_wine, wine_id, error)
 
 class WebModel:
