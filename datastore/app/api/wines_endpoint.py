@@ -3,7 +3,7 @@ from flask_restplus import Resource, reqparse
 from app.api.restplus import api, web_model
 import app.wine_domain.facade as wine_facade
 from app.api.error_handler import handle_errors
-from app.api.circuit_breaker import CircuitBreaker
+from app.api.circuit_breaker import wines_circuit_breaker
 
 get_wine_arguments = reqparse.RequestParser()
 get_wine_arguments.add_argument('id', type=int, location='args', required=True, nullable=False)
@@ -12,7 +12,7 @@ delete_wine_arguments = reqparse.RequestParser()
 delete_wine_arguments.add_argument('id', type=int, location='args', required=True, nullable=False)
 
 wines_ns = api.namespace('wines', description='API of wine datastore')
-wines_circuit_breaker = CircuitBreaker(20)
+
 
 @wines_ns.route('/')
 class Wines(Resource):

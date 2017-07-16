@@ -1,4 +1,5 @@
-from app.api.wines_endpoint import Wines, wines_circuit_breaker
+from app.api.wines_endpoint import Wines
+from app.api.circuit_breaker import wines_circuit_breaker
 from test.test_api.common import assert_endpoint_decorators
 from nose.tools import assert_equals
 

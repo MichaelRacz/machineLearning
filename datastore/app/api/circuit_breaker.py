@@ -51,3 +51,7 @@ class CircuitBreaker:
                     return {'error_message': 'Too many requests.'}, 429
         decorated_circuit_breaker_f.__wrapped__ = f
         return decorated_circuit_breaker_f
+
+wines_circuit_breaker = CircuitBreaker(20)
+svc_circuit_breaker = CircuitBreaker(20)
+nearest_neighbor_circuit_breaker = CircuitBreaker(20)
