@@ -8,17 +8,17 @@ class TestCircuitBreaker:
         self.circuit_breaker = CircuitBreaker(2)
 
     def test_initialize(self):
-        assert_equals(self.circuit_breaker.max_requests, 2)
-        assert_equals(self.circuit_breaker.open_requests, 0)
-        assert_equals(self.circuit_breaker.is_open, False)
-        assert_equals(self.circuit_breaker.reason, 'Service not initialized.')
-        assert_equals(self.circuit_breaker.status_code, 503)
+        assert_equals(self.circuit_breaker._max_requests, 2)
+        assert_equals(self.circuit_breaker._open_requests, 0)
+        assert_equals(self.circuit_breaker._is_open, False)
+        assert_equals(self.circuit_breaker._reason, 'Service not initialized.')
+        assert_equals(self.circuit_breaker._status_code, 503)
 
     def test_open(self):
         self.circuit_breaker.open()
-        assert_equals(self.circuit_breaker.is_open, True)
-        assert_equals(self.circuit_breaker.reason, None)
-        assert_equals(self.circuit_breaker.status_code, None)
+        assert_equals(self.circuit_breaker._is_open, True)
+        assert_equals(self.circuit_breaker._reason, None)
+        assert_equals(self.circuit_breaker._status_code, None)
 
     def test_close(self):
         self.circuit_breaker.close('reason', 1337)

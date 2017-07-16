@@ -7,7 +7,7 @@ from app.api.logger import logger
 import uuid
 from datetime import datetime
 from werkzeug.exceptions import HTTPException
-from app.api.circuit_breaker import wines_circuit_breaker
+from app.api.circuit_breaker import CircuitBreaker
 import traceback
 
 def _handle_errors(function_name):
@@ -40,6 +40,8 @@ delete_wine_arguments = reqparse.RequestParser()
 delete_wine_arguments.add_argument('id', type=int, location='args', required=True, nullable=False)
 
 wines_ns = api.namespace('wines', description='API of wine datastore')
+# TODO make configurable
+wines_circuit_breaker = CircuitBreaker(20)
 
 @wines_ns.route('/')
 class Wines(Resource):
