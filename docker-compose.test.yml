@@ -7,6 +7,6 @@ services:
       KAFKA_CREATE_TOPICS: "wine_test:1:1"
   datastore:
     environment:
-      DATASTORE_SETTINGS: '/app/config.test.py'
+      CONFIG_FILE: '/app/config.test.py'
       WINE_TOPIC: 'wine_test'
       KAFKA_HOSTS: 'kafka:9092'

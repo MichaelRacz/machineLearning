@@ -3,7 +3,7 @@ from flask_restplus import Api
 from app.api.model import initialize as initialize_web_model
 
 flask_app = Flask(__name__)
-flask_app.config.from_envvar('DATASTORE_SETTINGS')
+flask_app.config.from_envvar('CONFIG_FILE')
 
 api = Api(flask_app,
     title='datastore',
