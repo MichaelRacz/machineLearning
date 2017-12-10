@@ -6,19 +6,27 @@ import json
 
 @given(u'the datastore contains a training set')
 def step_impl(context):
+    training_set, test_set = _split_wine_data()
+    context.test_set = test_set
+    for record in training_set:
+        classified_wine = _convert_record(record)
+        response = post_wine_record(context, classified_wine)
+        assert_equals(response.status_code, 201)
+
+def _split_wine_data():
     training_set = []
-    context.test_set = []
+    test_set = []
     for record in wine_data:
         if random() < 0.7:
             training_set.append(record)
         else:
-            context.test_set.append(record)
-    for record in training_set:
-        wine = _extract_wine(record)
-        wine_class = str(record[0])
-        classified_wine = create_classified_wine(wine, wine_class)
-        response = post_wine_record(context, classified_wine)
-        assert_equals(response.status_code, 201)
+            test_set.append(record)
+    return training_set, test_set
+
+def _convert_record(record):
+    wine = _extract_wine(record)
+    wine_class = str(record[0])
+    return create_classified_wine(wine, wine_class)
 
 @when(u'I classify the test set using the SVC algorithm')
 def step_impl(context):

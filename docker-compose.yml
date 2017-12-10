@@ -20,15 +20,28 @@ services:
     build: .
     links:
       - kafka
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
     ports:
-      - '80:80'
+      - '1337:80'
     networks:
       - machineLearningNet
+    entrypoint: python -m app.datastore
+  svc:
+    build: .
+    links:
+      - kafka
+    ports:
+      - '1338:80'
+    networks:
+      - machineLearningNet
+    entrypoint: python -m app.svc
+  nearest_neighbor:
+    build: .
+    links:
+      - kafka
+    ports:
+      - '1339:80'
+    networks:
+      - machineLearningNet
+    entrypoint: python -m app.nearest_neighbor
 networks:
   machineLearningNet:

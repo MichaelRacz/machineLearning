@@ -10,3 +10,13 @@ services:
       CONFIG_FILE: '/app/config.test.py'
       WINE_TOPIC: 'wine_test'
       KAFKA_HOSTS: 'kafka:9092'
+  svc:
+    environment:
+      CONFIG_FILE: '/app/config.test.py'
+      WINE_TOPIC: 'wine_test'
+      KAFKA_HOSTS: 'kafka:9092'
+  nearest_neighbor:
+    environment:
+      CONFIG_FILE: '/app/config.test.py'
+      WINE_TOPIC: 'wine_test'
+      KAFKA_HOSTS: 'kafka:9092'
