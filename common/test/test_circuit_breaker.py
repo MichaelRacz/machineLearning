@@ -1,4 +1,4 @@
-from app.api.circuit_breaker import CircuitBreaker
+from common.app.circuit_breaker import CircuitBreaker
 from time import sleep
 from threading import Thread
 from nose.tools import assert_equals, assert_dict_equal

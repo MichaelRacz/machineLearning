@@ -1,9 +1,11 @@
+from common.app.circuit_breaker import CircuitBreaker
 from flask import request
 from flask_restplus import Resource, reqparse
 from app.api.restplus import api, web_model
 import app.wine_domain.facade as wine_facade
 from app.api.error_handler import handle_errors
-from app.api.circuit_breaker import wines_circuit_breaker
+
+wines_circuit_breaker = CircuitBreaker(20)
 
 get_wine_arguments = reqparse.RequestParser()
 get_wine_arguments.add_argument('id', type=int, location='args', required=True, nullable=False)

@@ -1,6 +1,5 @@
 import app.wine_domain.database as database
 from app.wine_domain.distributed_log import DistributedLogContext
-import app.api.circuit_breaker as circuit_breaker
 
 def create(classified_wine):
     id = database.create(classified_wine)
@@ -11,7 +10,9 @@ def create(classified_wine):
         try:
             database.delete(id)
         except Exception:
-            circuit_breaker.wines_circuit_breaker.close(_distributed_log_message, 500)
+            pass
+            # TODO: move closer to circuit breaker decoratee
+            # circuit_breaker.wines_circuit_breaker.close(_distributed_log_message, 500)
         raise WineDomainError(_distributed_log_message, error) from error
     return id
 
@@ -25,7 +26,8 @@ def delete(id):
         log = DistributedLogContext.get_log()
         log.log_delete(id)
     except Exception as error:
-        circuit_breaker.wines_circuit_breaker.close(_distributed_log_message, 500)
+        # TODO: move closer to circuit breaker decoratee
+        #circuit_breaker.wines_circuit_breaker.close(_distributed_log_message, 500)
         raise WineDomainError(_distributed_log_message, error) from error
 
 _distributed_log_message = 'Failed to propagate to the distributed log.'

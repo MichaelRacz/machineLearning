@@ -1,9 +1,11 @@
+from common.app.circuit_breaker import CircuitBreaker
 from app.api.restplus import api, web_model
 from flask_restplus import Resource
 from app.wine_domain.classification import classifier_factory
 from flask import request
 from app.api.error_handler import handle_errors
-from app.api.circuit_breaker import nearest_neighbor_circuit_breaker
+
+nearest_neighbor_circuit_breaker = CircuitBreaker(20)
 
 nearest_neighbor_ns = api.namespace('wines/classification/nearest_neighbor',
     description='API for Nearest Neighbor classification')
