@@ -18,15 +18,9 @@ def initialize(api):
     classified_wine = api.model('ClassifiedWine', {
         'wine': fields.Nested(wine, required=True),
         'wine_class': fields.String(required=True, enum=['1', '2', '3'])})
-    wine_id = api.model('WineId', {
-        'id': fields.String(required=True)})
-    error = api.model('Error', {
-        'error_message': fields.String(required=True)})
-    return WebModel(wine, classified_wine, wine_id, error)
+    return WebModel(wine, classified_wine)
 
 class WebModel:
-    def __init__(self, wine, classified_wine, wine_id, error):
+    def __init__(self, wine, classified_wine):
         self.wine = wine
         self.classified_wine = classified_wine
-        self.wine_id = wine_id
-        self.error = error
