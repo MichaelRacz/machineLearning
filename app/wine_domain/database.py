@@ -75,6 +75,8 @@ def _session_scope():
         session.close()
 
 class UnknownRecordError(Exception):
+    http_status_code = 404
+
     def __init__(self, id):
         self.message = "No record with id '{}' found.".format(id)
 

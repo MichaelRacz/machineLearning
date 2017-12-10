@@ -3,7 +3,7 @@ from flask import request
 from flask_restplus import Resource, reqparse
 from app.api.restplus import api, web_model
 import app.wine_domain.facade as wine_facade
-from app.api.error_handler import handle_errors
+from common.app.error_handler import handle_errors
 
 wines_circuit_breaker = CircuitBreaker(20)
 

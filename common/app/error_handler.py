@@ -1,4 +1,3 @@
-from app.wine_domain.database import UnknownRecordError
 from common.app.logger import logger
 import uuid
 from datetime import datetime
@@ -22,7 +21,7 @@ def handle_errors(function_name):
                 detailed_message = '{}: {}'.format(repr(error), traceback.format_tb(error.__traceback__))
                 logger.error("{} failed call '{}', request id: {}, error message: {}"
                     .format(str(datetime.now()), function_name, request_id, detailed_message))
-                status_code = 404 if type(error) is UnknownRecordError else 500
+                status_code = error.http_status_code if hasattr(error, 'http_status_code') else 500
                 return {'error_message': str(error)}, status_code
         error_handling_f.__wrapped__ = f
         return error_handling_f

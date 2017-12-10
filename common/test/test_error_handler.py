@@ -1,8 +1,7 @@
 from nose.tools import assert_equals, assert_true, assert_dict_equal, assert_is, assert_in
 from testfixtures import LogCapture
-from app.api.error_handler import handle_errors
-from app.api.logger import logger
-from app.wine_domain.database import UnknownRecordError
+from common.app.error_handler import handle_errors
+from common.app.logger import logger
 from werkzeug.exceptions import HTTPException
 
 def test_handle_errors():
@@ -41,13 +40,15 @@ def test_handle_errors_reraises_HTTPException():
     assert_equals(log.records[1].levelname, 'ERROR')
     assert_true("failed call 'foo' (framework validation), request id:" in log.records[1].msg)
 
-def test_handle_errors_decoratee_raises_UnknownRecordError():
+def test_handle_errors_decoratee_raises_error_with_http_status_code():
     def decoratee():
-        raise UnknownRecordError('error message')
+        error = Exception('error message')
+        error.http_status_code = 444
+        raise error
     with LogCapture() as log:
         result, status_code = handle_errors('foo')(decoratee)()
-        assert_dict_equal(result, {'error_message': "No record with id 'error message' found."})
-        assert_equals(status_code, 404)
+        assert_dict_equal(result, {'error_message': 'error message'})
+        assert_equals(status_code, 444)
     _assert_failed_call(log)
 
 def test_handle_errors_decoratee_raises():

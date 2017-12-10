@@ -3,7 +3,7 @@ from app.api.restplus import api, web_model
 from flask_restplus import Resource
 from app.wine_domain.classification import classifier_factory
 from flask import request
-from app.api.error_handler import handle_errors
+from common.app.error_handler import handle_errors
 
 nearest_neighbor_circuit_breaker = CircuitBreaker(20)
 
