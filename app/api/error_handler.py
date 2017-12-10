@@ -1,5 +1,5 @@
 from app.wine_domain.database import UnknownRecordError
-from app.api.logger import logger
+from common.app.logger import logger
 import uuid
 from datetime import datetime
 from werkzeug.exceptions import HTTPException

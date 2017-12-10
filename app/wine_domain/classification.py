@@ -1,7 +1,7 @@
 from sklearn.model_selection import GridSearchCV
 from sklearn import svm, neighbors, preprocessing
 import app.wine_domain.database as database
-from app.api.logger import logger
+from common.app.logger import logger
 from numpy import array
 from threading import Lock
 
