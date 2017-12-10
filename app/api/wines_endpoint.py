@@ -1,19 +1,24 @@
 from common.app.circuit_breaker import CircuitBreaker
 from flask import request
 from flask_restplus import Resource, reqparse
-from app.api.restplus import api, web_model
+from app.api.restplus import api
 import app.wine_domain.facade as wine_facade
 from common.app.error_handler import handle_errors
+from common.app.web_model import create_wine
+from flask_restplus import fields
 
+wines_ns = api.namespace('wines', description='API of wine datastore')
 wines_circuit_breaker = CircuitBreaker(20)
+
+classified_wine = api.model('ClassifiedWine', {
+    'wine': fields.Nested(create_wine(api), required=True),
+    'wine_class': fields.String(required=True, enum=['1', '2', '3'])})
 
 get_wine_arguments = reqparse.RequestParser()
 get_wine_arguments.add_argument('id', type=int, location='args', required=True, nullable=False)
 
 delete_wine_arguments = reqparse.RequestParser()
 delete_wine_arguments.add_argument('id', type=int, location='args', required=True, nullable=False)
-
-wines_ns = api.namespace('wines', description='API of wine datastore')
 
 @wines_ns.route('/')
 class Wines(Resource):
@@ -53,7 +58,7 @@ class Wines(Resource):
         description='This endpoint creates a wine record with a correspondening class.',
         id='create_wine',
         tags='Wines')
-    @api.expect(web_model.classified_wine, validate=True)
+    @api.expect(classified_wine, validate=True)
     @wines_circuit_breaker.decorate
     @handle_errors('create_wine')
     def post(self):

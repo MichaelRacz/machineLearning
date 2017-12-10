@@ -1,7 +1,7 @@
 from flask_restplus import fields
 
-def initialize(api):
-    wine = api.model('Wine', {
+def create_wine(api):
+    return api.model('Wine', {
         'alcohol': fields.Float(required=True, min=0.0),
         'malic_acid': fields.Float(required=True, min=0.0),
         'ash': fields.Float(required=True, min=0.0),
@@ -15,12 +15,3 @@ def initialize(api):
         'hue': fields.Float(required=True, min=0.0),
         'odxxx_of_diluted_wines': fields.Float(required=True, min=0.0, description='description: OD280/OD315 of diluted wines'),
         'proline': fields.Integer(required=True, min=0)})
-    classified_wine = api.model('ClassifiedWine', {
-        'wine': fields.Nested(wine, required=True),
-        'wine_class': fields.String(required=True, enum=['1', '2', '3'])})
-    return WebModel(wine, classified_wine)
-
-class WebModel:
-    def __init__(self, wine, classified_wine):
-        self.wine = wine
-        self.classified_wine = classified_wine
