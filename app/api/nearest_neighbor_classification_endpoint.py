@@ -6,7 +6,7 @@ from app.api.error_handler import handle_errors
 from app.api.circuit_breaker import nearest_neighbor_circuit_breaker
 
 nearest_neighbor_ns = api.namespace('wines/classification/nearest_neighbor',
-    description='API of Nearest Neighbor classification')
+    description='API for Nearest Neighbor classification')
 
 @nearest_neighbor_ns.route('/')
 class NearestNeighbor(Resource):

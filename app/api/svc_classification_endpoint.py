@@ -10,7 +10,7 @@ svc_ns = api.namespace('wines/classification/svc', description='API of SVC class
 @svc_ns.route('/')
 class SVC(Resource):
     @api.doc(
-        description='This endpoint returns classification of wine record using the SVC algorithm.',
+        description='This endpoint performs classification of a wine record using the SVC algorithm.',
         id='classify_svc',
         tags='Wines')
     @api.expect(web_model.wine, validate=True)

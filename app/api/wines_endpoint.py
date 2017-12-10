@@ -13,7 +13,6 @@ delete_wine_arguments.add_argument('id', type=int, location='args', required=Tru
 
 wines_ns = api.namespace('wines', description='API of wine datastore')
 
-
 @wines_ns.route('/')
 class Wines(Resource):
     @api.doc(
