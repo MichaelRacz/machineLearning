@@ -32,6 +32,7 @@ def delete(id):
 
 _distributed_log_message = 'Failed to propagate to the distributed log.'
 
+#TODO: rename
 class WineDomainError(Exception):
     def __init__(self, message, inner_error=None):
         self.message = message

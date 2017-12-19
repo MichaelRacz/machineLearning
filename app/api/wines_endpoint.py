@@ -2,7 +2,7 @@ from common.app.circuit_breaker import CircuitBreaker
 from flask import request
 from flask_restplus import Resource, reqparse
 from app.api.restplus import api
-import app.wine_domain.facade as wine_facade
+import app.wine_domain.wines as wines
 from common.app.error_handler import handle_errors
 from common.app.web_model import create_wine
 from flask_restplus import fields
@@ -35,7 +35,7 @@ class Wines(Resource):
         """
         args = get_wine_arguments.parse_args()
         id = args['id']
-        classified_wine = wine_facade.retrieve(id)
+        classified_wine = wines.retrieve(id)
         return classified_wine, 200
 
     @api.doc(
@@ -51,7 +51,7 @@ class Wines(Resource):
         """
         args = get_wine_arguments.parse_args()
         id = args['id']
-        wine_facade.delete(id)
+        wines.delete(id)
         return {}, 204
 
     @api.doc(
@@ -66,5 +66,5 @@ class Wines(Resource):
         Create wine
         """
         classified_wine = request.get_json(force=True)
-        id = wine_facade.create(classified_wine)
+        id = wines.create(classified_wine)
         return {'id': id}, 201
