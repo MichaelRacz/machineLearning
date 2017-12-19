@@ -1,4 +1,4 @@
-from app.wine_domain.database import engine
+from common.app.wine_db import engine
 import json
 
 def clear_database():

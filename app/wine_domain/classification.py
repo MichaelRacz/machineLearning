@@ -1,9 +1,9 @@
 from sklearn.model_selection import GridSearchCV
 from sklearn import svm, neighbors, preprocessing
-import app.wine_domain.database as database
 from common.app.logger import logger
 from numpy import array
 from threading import Lock
+import common.app.wine_db as wine_db
 
 n_jobs = 4
 pre_dispatch = '10000*n_jobs'
@@ -42,7 +42,7 @@ class ClassifierFactory:
     def _load_training_set(self):
         training_set = []
         training_set_classes = []
-        for classified_wine in database.read_all():
+        for classified_wine in _read_all():
             training_set.append(_convert_to_list(classified_wine['wine']))
             training_set_classes.append(classified_wine['wine_class'])
         return array(training_set), array(training_set_classes)
@@ -110,3 +110,10 @@ def _convert_to_list(wine_dict):
         wine_dict['hue'],
         wine_dict['odxxx_of_diluted_wines'],
         wine_dict['proline']]
+
+def _read_all():
+    with wine_db.session_scope() as session:
+        wines = session.query(wine_db.Wine)
+        classified_wines = [wine_db.create_classified_wine(wine) for wine in wines]
+        session.rollback()
+        return classified_wines

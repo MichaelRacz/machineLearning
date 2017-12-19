@@ -1,5 +1,8 @@
 from app.wine_domain.distributed_log import DistributedLogContext
-import app.wine_domain.database as database
+
+# TODO: fix this dependency
+import app.wine_domain.wines as database
+
 from contextlib import contextmanager
 from threading import Thread
 
@@ -19,9 +22,9 @@ class EventHandler:
     def handle(self):
         for entry in self._log.read():
             if entry['type'] == 'create':
-                database.create(entry['classified_wine'], entry['id'])
+                database._insert_into_db(entry['classified_wine'], entry['id'])
             if entry['type'] == 'delete':
-                database.delete(entry['id'])
+                database._delete_from_db(entry['id'])
 
     def stop(self):
         self._log.stop_read()

@@ -1,7 +1,7 @@
 from app.api.restplus import flask_app, api
 from app.api.svc_classification_endpoint import svc_ns
 from app.api.specification_endpoint import specification_ns
-import app.wine_domain.database as database
+import common.app.wine_db as database
 from app.wine_domain.distributed_log import DistributedLogContext
 from app.api.circuit_breaker import svc_circuit_breaker
 from app.wine_domain.synchronization import synchronize_datastore

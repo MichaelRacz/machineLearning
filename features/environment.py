@@ -1,4 +1,4 @@
-import app.wine_domain.database as database
+import common.app.wine_db as database
 from app.api.restplus import flask_app, api
 from app.api.wines_endpoint import wines_ns, wines_circuit_breaker
 from app.api.svc_classification_endpoint import svc_ns, svc_circuit_breaker
