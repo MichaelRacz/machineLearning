@@ -1,11 +1,25 @@
 import common.app.wine_db as wine_db
-from app.wine_domain.distributed_log import DistributedLogContext
+
+from pykafka import KafkaClient
+from app.api.restplus import flask_app
+import json
+
+producer = None
+
+def init():
+    global producer
+    client = KafkaClient(hosts=flask_app.config['KAFKA_HOSTS'])
+    topic = client.topics[flask_app.config['WINE_TOPIC'].encode('ascii')]
+    producer = topic.get_sync_producer()
+
+def exit():
+    producer.__exit__(None, None, None)
+    producer = None
 
 def create(classified_wine):
     id = _insert_into_db(classified_wine)
     try:
-        log = DistributedLogContext.get_log()
-        log.log_create(id, classified_wine)
+        _log_create(id, classified_wine)
     except Exception as error:
         try:
             _delete_from_db(id)
@@ -25,8 +39,7 @@ def retrieve(id):
 def delete(id):
     _delete_from_db(id)
     try:
-        log = DistributedLogContext.get_log()
-        log.log_delete(id)
+        _log_delete(id)
     except Exception as error:
         # TODO: move closer to circuit breaker decoratee
         #circuit_breaker.wines_circuit_breaker.close(_distributed_log_message, 500)
@@ -79,3 +92,20 @@ class UnknownRecordError(Exception):
 
     def __str__(self):
         return self.message
+
+def _log_create(id, classified_wine):
+    event = {
+        'type': 'create',
+        'version': '1',
+        'id': id,
+        'classified_wine': classified_wine
+    }
+    producer.produce(json.dumps(event).encode('utf-8'))
+
+def _log_delete(id):
+    event = {
+        'type': 'delete',
+        'version': '1',
+        'id': id
+    }
+    producer.produce(json.dumps(event).encode('utf-8'))

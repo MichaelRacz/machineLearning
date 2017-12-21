@@ -8,6 +8,8 @@ from features.steps.step_utilities import clear_database
 from app.wine_domain.distributed_log import DistributedLogContext
 from app.wine_domain.synchronization import synchronize_datastore
 
+import app.wine_domain.wines as wines
+
 def before_all(context):
     database.initialize()
     api.add_namespace(wines_ns)
@@ -22,6 +24,7 @@ def before_all(context):
     wines_circuit_breaker.open()
     svc_circuit_breaker.open()
     nearest_neighbor_circuit_breaker.open()
+    wines.init()
 
 def after_all(context):
     context.test_log_backend.tear_down()
