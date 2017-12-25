@@ -4,7 +4,7 @@ from random import random
 from nose.tools import assert_equals, assert_greater
 import json
 import svc.app.classification as svc
-from app.wine_domain import nearest_neighbor
+import nearest_neighbor.app.classification as nearest_neighbor
 
 @given(u'the datastore contains a training set')
 def step_impl(context):

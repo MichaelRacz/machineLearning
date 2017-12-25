@@ -35,7 +35,7 @@ class SVC(Resource):
         return {'class': predicted_class}, 200
 
 if __name__ == '__main__':
-    svc.init()
+    classification.init()
     svc_circuit_breaker.open()
     api.add_namespace(svc_ns)
     #TODO: fix specification
