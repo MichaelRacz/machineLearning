@@ -3,7 +3,7 @@ from features.steps.wine_data import wine_data
 from random import random
 from nose.tools import assert_equals, assert_greater
 import json
-from app.wine_domain import svc
+import svc.app.classification as svc
 from app.wine_domain import nearest_neighbor
 
 @given(u'the datastore contains a training set')
