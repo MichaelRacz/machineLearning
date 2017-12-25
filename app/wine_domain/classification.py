@@ -3,7 +3,7 @@ from sklearn import svm, neighbors, preprocessing
 from common.app.logger import logger
 from numpy import array
 from threading import Lock
-import common.app.wine_db as wine_db
+import app.wine_domain.distributed_log as distributed_log
 
 n_jobs = 4
 pre_dispatch = '10000*n_jobs'
@@ -112,8 +112,5 @@ def _convert_to_list(wine_dict):
         wine_dict['proline']]
 
 def _read_all():
-    with wine_db.session_scope() as session:
-        wines = session.query(wine_db.Wine)
-        classified_wines = [wine_db.create_classified_wine(wine) for wine in wines]
-        session.rollback()
-        return classified_wines
+    log = distributed_log.read()
+    return log.values()
