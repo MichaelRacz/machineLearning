@@ -4,6 +4,7 @@ from random import random
 from nose.tools import assert_equals, assert_greater
 import json
 from app.wine_domain import svc
+from app.wine_domain import nearest_neighbor
 
 @given(u'the datastore contains a training set')
 def step_impl(context):
@@ -36,6 +37,7 @@ def step_impl(context):
 
 @when(u'I classify the test set using the Nearest Neighbor algorithm')
 def step_impl(context):
+    nearest_neighbor.init()
     classify(context, context.nearest_neighbor_ns)
 
 def classify(context, namespace):
