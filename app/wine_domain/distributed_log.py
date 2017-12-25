@@ -2,7 +2,6 @@ from pykafka import KafkaClient
 from app.api.restplus import flask_app
 import json
 from pykafka.common import OffsetType
-from pykafka.exceptions import ConsumerStoppedException
 
 def read():
     client = KafkaClient(hosts=flask_app.config['KAFKA_HOSTS'])
@@ -23,32 +22,3 @@ def _handle_message(message, wines):
         wines[message['id']] = message['classified_wine']
     if message['type'] == 'delete':
         wine.pop(message['id'])
-
-#TODO: Remove from here
-class DistributedLog:
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, traceback):
-        pass
-
-    def read(self):
-        pass
-
-    def stop_read(self):
-        pass
-
-class DistributedLogContext:
-    _log = None
-
-    def get_log():
-        if DistributedLogContext._log == None:
-            log = DistributedLog()
-            log.__enter__()
-            DistributedLogContext._log = log
-        return DistributedLogContext._log
-
-    def free_log():
-        if DistributedLogContext._log != None:
-            DistributedLogContext._log.__exit__(None, None, None)
-            DistributedLogContext._log = None

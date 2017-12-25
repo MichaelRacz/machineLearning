@@ -5,9 +5,6 @@ from app.api.svc_classification_endpoint import svc_ns, svc_circuit_breaker
 from app.api.nearest_neighbor_classification_endpoint import nearest_neighbor_ns, nearest_neighbor_circuit_breaker
 from test.test_log_backend import TestLogBackend
 from features.steps.step_utilities import clear_database
-from app.wine_domain.distributed_log import DistributedLogContext
-from app.wine_domain.synchronization import synchronize_datastore
-
 import app.wine_domain.wines as wines
 
 def before_all(context):
@@ -33,11 +30,11 @@ def before_tag(context, tag):
     if tag == 'needs_state_reset':
         clear_database()
         context.test_log_backend.reset_topic()
-        DistributedLogContext.free_log()
     if tag == 'log_synchronization':
-        context.synchronization_scope = synchronize_datastore()
-        context.synchronization_scope.__enter__()
+        pass
+        #TODO: what should happen here
 
 def after_tag(context, tag):
     if tag == 'log_synchronization':
-        context.synchronization_scope.__exit__(None, None, None)
+        pass
+        #TODO: what should happen here?
