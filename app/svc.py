@@ -1,11 +1,11 @@
+from app.wine_domain import svc
 from app.api.restplus import flask_app, api
 from app.api.svc_classification_endpoint import svc_ns
 from app.api.specification_endpoint import specification_ns
-import common.app.wine_db as database
 from app.api.circuit_breaker import svc_circuit_breaker
 
 if __name__ == '__main__':
-    database.initialize()
+    svc.init()
     svc_circuit_breaker.open()
     api.add_namespace(svc_ns)
     api.add_namespace(specification_ns)

@@ -3,6 +3,7 @@ from features.steps.wine_data import wine_data
 from random import random
 from nose.tools import assert_equals, assert_greater
 import json
+from app.wine_domain import svc
 
 @given(u'the datastore contains a training set')
 def step_impl(context):
@@ -30,6 +31,7 @@ def _convert_record(record):
 
 @when(u'I classify the test set using the SVC algorithm')
 def step_impl(context):
+    svc.init()
     classify(context, context.svc_ns)
 
 @when(u'I classify the test set using the Nearest Neighbor algorithm')
