@@ -1,6 +1,5 @@
 import json
 from nose.tools import assert_equals, assert_is_not_none, assert_dict_equal, assert_in, assert_true
-from app.api.restplus import flask_app
 import sys
 from features.steps.step_utilities import post_wine_record, create_wine, create_classified_wine
 

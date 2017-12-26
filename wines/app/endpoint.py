@@ -1,14 +1,25 @@
+from flask import Flask, request
+from flask_restplus import Api
 from common.app.circuit_breaker import CircuitBreaker
-from flask import request
 from flask_restplus import Resource, reqparse
 from app.api.restplus import api
-import app.wine_domain.wines as wines
+from wines.app import datastore
 from common.app.error_handler import handle_errors
 from common.app.web_model import create_wine
 from flask_restplus import fields
 
-wines_ns = api.namespace('wines', description='API of wine datastore')
+flask_app = Flask('Wine Datastore')
+flask_app.config.from_envvar('CONFIG_FILE')
+
+api = Api(flask_app,
+    title='Wine Datastore',
+    description='Wine Datastore service.',
+    version='1.0.0',
+    prefix='/v1',
+    default_mediatype='application/json')
+
 wines_circuit_breaker = CircuitBreaker(20)
+wines_ns = api.namespace('wines', description='API of wine datastore')
 
 classified_wine = api.model('ClassifiedWine', {
     'wine': fields.Nested(create_wine(api), required=True),
@@ -35,7 +46,7 @@ class Wines(Resource):
         """
         args = get_wine_arguments.parse_args()
         id = args['id']
-        classified_wine = wines.retrieve(id)
+        classified_wine = datastore.retrieve(id)
         return classified_wine, 200
 
     @api.doc(
@@ -51,7 +62,7 @@ class Wines(Resource):
         """
         args = get_wine_arguments.parse_args()
         id = args['id']
-        wines.delete(id)
+        datastore.delete(id)
         return {}, 204
 
     @api.doc(
@@ -66,5 +77,16 @@ class Wines(Resource):
         Create wine
         """
         classified_wine = request.get_json(force=True)
-        id = wines.create(classified_wine)
+        id = datastore.create(classified_wine)
         return {'id': id}, 201
+
+if __name__ == '__main__':
+    try:
+        database.initialize()
+        wines_circuit_breaker.open()
+        api.add_namespace(wines_ns)
+        api.add_namespace(specification_ns)
+        datastore.init(flask_app.config['KAFKA_HOSTS'], flask_app.config['WINE_TOPIC'])
+        flask_app.run(host='0.0.0.0', port=80)
+    finally:
+        datastore.exit()

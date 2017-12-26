@@ -1,15 +1,13 @@
-import common.app.wine_db as wine_db
-
 from pykafka import KafkaClient
-from app.api.restplus import flask_app
 import json
+from wines.app import database
 
 producer = None
 
-def init():
+def init(kafka_hosts, topic_name):
     global producer
-    client = KafkaClient(hosts=flask_app.config['KAFKA_HOSTS'])
-    topic = client.topics[flask_app.config['WINE_TOPIC'].encode('ascii')]
+    client = KafkaClient(hosts=kafka_hosts)
+    topic = client.topics[topic_name.encode('ascii')]
     producer = topic.get_sync_producer()
 
 def exit():
@@ -31,10 +29,10 @@ def create(classified_wine):
     return id
 
 def retrieve(id):
-    with wine_db.session_scope() as session:
+    with database.session_scope() as session:
         wine = _get(id, session)
         session.rollback()
-        return wine_db.create_classified_wine(wine)
+        return database.create_classified_wine(wine)
 
 def delete(id):
     _delete_from_db(id)
@@ -62,8 +60,8 @@ class WineDomainError(Exception):
 
 def _insert_into_db(classified_wine, id = None):
     merged_wine = {**{'wine_class': classified_wine['wine_class']}, **classified_wine['wine']}
-    with wine_db.session_scope() as session:
-        wine = wine_db.Wine(**merged_wine)
+    with database.session_scope() as session:
+        wine = database.Wine(**merged_wine)
         if id is not None:
             wine.id = id
         session.add(wine)
@@ -73,13 +71,13 @@ def _insert_into_db(classified_wine, id = None):
         return id
 
 def _delete_from_db(id):
-    with wine_db.session_scope() as session:
+    with database.session_scope() as session:
         wine = _get(id, session)
         session.delete(wine)
         session.commit()
 
 def _get(id, session):
-    wine = session.query(wine_db.Wine).filter_by(id=id).first()
+    wine = session.query(database.Wine).filter_by(id=id).first()
     if wine is None:
         raise (UnknownRecordError(id))
     return wine
