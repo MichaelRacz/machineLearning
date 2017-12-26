@@ -5,14 +5,16 @@ from wines.app import database
 producer = None
 
 def init(kafka_hosts, topic_name):
-    global producer
     client = KafkaClient(hosts=kafka_hosts)
     topic = client.topics[topic_name.encode('ascii')]
+    global producer
     producer = topic.get_sync_producer()
 
 def exit():
-    producer.__exit__(None, None, None)
-    producer = None
+    global producer
+    if producer is not None:
+        producer.__exit__(None, None, None)
+        producer = None
 
 def create(classified_wine):
     id = _insert_into_db(classified_wine)

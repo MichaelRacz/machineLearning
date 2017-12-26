@@ -1,13 +1,3 @@
-from wines.app.database import engine
-import json
-
-def clear_database():
-    engine.execute('DELETE FROM Wines')
-
-def post_wine_record(context, classified_wine):
-    return context.client.post(context.wines_ns,
-        data=json.dumps(classified_wine),
-        headers={'content-type':'application/json'})
 
 def create_wine(alcohol = 0.0,
     malic_acid = 1.1,

@@ -3,10 +3,11 @@ from flask_restplus import Api
 from common.app.circuit_breaker import CircuitBreaker
 from flask_restplus import Resource, reqparse
 from app.api.restplus import api
-from wines.app import datastore
+from wines.app import datastore, database
 from common.app.error_handler import handle_errors
 from common.app.web_model import create_wine
 from flask_restplus import fields
+from contextlib import ContextDecorator
 
 flask_app = Flask('Wine Datastore')
 flask_app.config.from_envvar('CONFIG_FILE')
@@ -80,13 +81,20 @@ class Wines(Resource):
         id = datastore.create(classified_wine)
         return {'id': id}, 201
 
-if __name__ == '__main__':
-    try:
+class InitializationScope(ContextDecorator):
+    def __enter__(self):
         database.initialize()
         wines_circuit_breaker.open()
         api.add_namespace(wines_ns)
-        api.add_namespace(specification_ns)
+        #TODO: Fix this
+        #api.add_namespace(specification_ns)
         datastore.init(flask_app.config['KAFKA_HOSTS'], flask_app.config['WINE_TOPIC'])
-        flask_app.run(host='0.0.0.0', port=80)
-    finally:
+        return self
+
+    def __exit__(self, *exc):
         datastore.exit()
+        return False
+
+if __name__ == '__main__':
+    with InitializationScope():
+        flask_app.run(host='0.0.0.0', port=port)
