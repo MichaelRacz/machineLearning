@@ -1,6 +1,7 @@
 import json
 from nose.tools import assert_equals, assert_is_not_none, assert_dict_equal, assert_in, assert_true
 import sys
+from behave import given, when, then
 
 @given(u'I have a valid wine record')
 def step_impl(context):
@@ -95,25 +96,6 @@ def step_impl(context, id):
 @then(u'the HTTP status code is "{expected_status_code:d}"')
 def step_impl(context, expected_status_code):
     assert_equals(context.response.status_code, expected_status_code)
-
-@then(u'the creation is logged')
-def step_impl(context):
-    expected_event = {
-        'type': 'create',
-        'version': '1',
-        'id': context.response_content['id'],
-        'classified_wine': context.wine_record
-    }
-    _assert_contains_message(context, expected_event)
-
-@then(u'the deletion is logged')
-def step_impl(context):
-    expected_event = {
-        'type': 'delete',
-        'version': '1',
-        'id': context.response_content['id']
-    }
-    _assert_contains_message(context, expected_event)
 
 @when(u'I log some create and delete entries')
 def step_impl(context):
@@ -218,12 +200,3 @@ def _add_response_to_context(context, response):
     response_data = response.get_data(as_text=True)
     if(response_data != ''):
         context.response_content = json.loads(response_data)
-
-def _assert_contains_message(context, expected_message):
-    consumer = context.test_log_backend.create_consumer()
-    messages = [json.loads(message.value.decode('utf-8')) for message in consumer if message is not None]
-    matching_messages = [message for message in messages
-        if message['type'] == expected_message['type']
-        and message['id'] == expected_message['id']]
-    assert_equals(1, len(matching_messages))
-    assert_dict_equal(matching_messages[0], expected_message)

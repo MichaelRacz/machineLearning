@@ -1,4 +1,4 @@
-Feature: As an operator of the datastore
+Feature: As consumer of the datastore
   I want a distributed log of create and
   delete operations.
 
