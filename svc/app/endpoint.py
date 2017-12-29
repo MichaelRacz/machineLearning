@@ -17,7 +17,7 @@ api = Api(flask_app,
     default_mediatype='application/json')
 
 svc_circuit_breaker = CircuitBreaker(20)
-svc_ns = api.namespace('wines/classification/svc', description='API for SVC classification')
+svc_ns = api.namespace('svc', description='API for SVC classification')
 wine = create_wine(api)
 
 @svc_ns.route('/')
@@ -34,10 +34,13 @@ class SVC(Resource):
         predicted_class = classification.predict_class(wine)
         return {'class': predicted_class}, 200
 
-if __name__ == '__main__':
+def init():
     classification.init()
     svc_circuit_breaker.open()
     api.add_namespace(svc_ns)
     #TODO: fix specification
     #api.add_namespace(specification_ns)
+
+if __name__ == '__main__':
+    init()
     flask_app.run(host='0.0.0.0', port=80)
