@@ -1,5 +1,6 @@
 from classification_contract.wine_test_data.wine_data import wine_data
 from classification_contract.assertions import assert_classified_wine_structure
+from random import random
 
 def get_classified_wine():
     classified_wine = _extract_classified_wine(wine_data[-1])
@@ -42,16 +43,16 @@ def _create_wine(alcohol,
     odxxx_of_diluted_wines,
     proline):
     return {
-        'alcohol': alcohol,
-        'malic_acid': malic_acid,
-        'ash': ash,
-        'alcalinity_of_ash': alcalinity_of_ash,
+        'alcohol': float(alcohol),
+        'malic_acid': float(malic_acid),
+        'ash': float(ash),
+        'alcalinity_of_ash': float(alcalinity_of_ash),
         'magnesium':  magnesium,
-        'total_phenols': total_phenols,
-        'flavanoids': flavanoids,
-        'nonflavanoid_phenols': nonflavanoid_phenols,
-        'proanthocyanins': proanthocyanins,
-        'color_intensity': color_intensity,
-        'hue': hue,
-        'odxxx_of_diluted_wines': odxxx_of_diluted_wines,
+        'total_phenols': float(total_phenols),
+        'flavanoids': float(flavanoids),
+        'nonflavanoid_phenols': float(nonflavanoid_phenols),
+        'proanthocyanins': float(proanthocyanins),
+        'color_intensity': float(color_intensity),
+        'hue': float(hue),
+        'odxxx_of_diluted_wines': float(odxxx_of_diluted_wines),
         'proline': proline}

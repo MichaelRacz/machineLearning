@@ -18,7 +18,7 @@ api = Api(flask_app,
 
 nearest_neighbor_circuit_breaker = CircuitBreaker(20)
 
-nearest_neighbor_ns = api.namespace('wines/classification/nearest_neighbor',
+nearest_neighbor_ns = api.namespace('nearest_neighbor',
     description='API for Nearest Neighbor classification')
 
 wine = create_wine(api)
@@ -37,10 +37,13 @@ class NearestNeighbor(Resource):
         predicted_class = classification.predict_class(wine)
         return {'class': predicted_class}, 200
 
-if __name__ == '__main__':
+def init():
     classification.init()
     nearest_neighbor_circuit_breaker.open()
     api.add_namespace(nearest_neighbor_ns)
     #TODO: fix specification
     #api.add_namespace(specification_ns)
+
+if __name__ == '__main__':
+    init()
     flask_app.run(host='0.0.0.0', port=80)
