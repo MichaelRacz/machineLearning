@@ -1,5 +1,6 @@
 from flask_restplus import fields
 
+#TODO: remove nesting, create own model for each service
 def create_wine(api):
     return api.model('Wine', {
         'alcohol': fields.Float(required=True, min=0.0),

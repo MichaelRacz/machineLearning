@@ -147,6 +147,11 @@ def step_impl(context):
         _get_wine(context, id)
         assert_equals(context.response.status_code, 404)
 
+def _create_classified_wine(wine, wine_class):
+    return {
+        'wine': wine,
+        'wine_class': wine_class}
+
 def _create_wine(alcohol = 0.0,
     malic_acid = 1.1,
     ash = 2.2,
@@ -174,11 +179,6 @@ def _create_wine(alcohol = 0.0,
         'hue': hue,
         'odxxx_of_diluted_wines': odxxx_of_diluted_wines,
         'proline': proline}
-
-def _create_classified_wine(wine, wine_class):
-    return {
-        'wine': wine,
-        'wine_class': wine_class}
 
 def _post_wine_record(context, classified_wine):
     return context.client.post(context.wines_ns,
