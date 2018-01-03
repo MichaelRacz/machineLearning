@@ -1,6 +1,6 @@
 from classification_contract.wine_test_data.utilities import get_classified_wine
 import json
-from classification_contract.messages import create_create_message, create_delete_message
+from classification_contract.messages import create_create_message, create_delete_message, read_all_messages
 from nose.tools import assert_equals, assert_dict_equal
 
 @given(u'I have a classified wine')
@@ -33,8 +33,7 @@ def step_impl(context):
     _assert_contains_message(context, expected_message)
 
 def _assert_contains_message(context, expected_message):
-    consumer = context.test_log_backend.create_consumer()
-    messages = [json.loads(message.value.decode('utf-8')) for message in consumer if message is not None]
+    messages = read_all_messages(context.test_log_backend.hosts, context.test_log_backend.topic_name)
     matching_messages = [message for message in messages
         if message['type'] == expected_message['type']
         and message['id'] == expected_message['id']]

@@ -1,27 +1,27 @@
-import app.wine_domain.distributed_log as distributed_log
 from numpy import array
 from sklearn.model_selection import GridSearchCV
 from sklearn import svm
+from classification_contract.messages import load_classified_wines
 
 n_jobs = 4
 pre_dispatch = '10000*n_jobs'
 classifier = None
 
-def init():
+def init(hosts, topic):
     global classifier
     if classifier is None:
-        classifier = _initialize_classifier()
+        classifier = _initialize_classifier(hosts, topic)
 
-def _initialize_classifier():
-    training_set, training_set_classes = _load_training_set()
+def _initialize_classifier(hosts, topic):
+    classified_wines = load_classified_wines(hosts, topic)
+    training_set, training_set_classes = _prepare_training_set(classified_wines)
     classifier = _create_classifier()
     classifier.fit(training_set, training_set_classes)
     return classifier
 
-def _load_training_set():
+def _prepare_training_set(classified_wines):
     training_set = []
     training_set_classes = []
-    classified_wines = distributed_log.read().values()
     for classified_wine in classified_wines:
         training_set.append(_convert_to_list(classified_wine['wine']))
         training_set_classes.append(classified_wine['wine_class'])

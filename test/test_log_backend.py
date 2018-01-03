@@ -18,7 +18,8 @@ class TestLogBackend:
                 'up', '-d'])
         self._environment = environment
         self._client = KafkaClient(hosts=hosts)
-        self._topic_name = topic_name
+        self.hosts = hosts
+        self.topic_name = topic_name
 
     def reset_topic(self):
         """
@@ -29,7 +30,7 @@ class TestLogBackend:
             "if [ $? -eq 0 ]; then "
             "kafka-topics.sh --create --topic {0} --partitions 1 --replication-factor 1 --zookeeper localhost:2181; "
             "fi'"
-            ).format(self._topic_name)
+            ).format(self.topic_name)
         print("RUNNING:" + command)
         run(command, shell=True)
 
@@ -37,7 +38,7 @@ class TestLogBackend:
         """
         Create a consumer of the wine topic
         """
-        topic = self._client.topics[self._topic_name.encode('ascii')]
+        topic = self._client.topics[self.topic_name.encode('ascii')]
         return topic.get_simple_consumer(consumer_timeout_ms=100,
             auto_offset_reset=OffsetType.EARLIEST,
             reset_offset_on_start=False)
@@ -46,7 +47,7 @@ class TestLogBackend:
         """
         Create a producer for the wine topic
         """
-        topic = self._client.topics[self._topic_name.encode('ascii')]
+        topic = self._client.topics[self.topic_name.encode('ascii')]
         return topic.get_sync_producer()
 
     def tear_down(self):

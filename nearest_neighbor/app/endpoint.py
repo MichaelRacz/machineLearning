@@ -43,7 +43,7 @@ class Specification(Resource):
         return json.dumps(api.__schema__), 200
 
 def init():
-    classification.init()
+    classification.init(flask_app.config['KAFKA_HOSTS'], flask_app.config['WINE_TOPIC'])
     nearest_neighbor_circuit_breaker.open()
     api.add_namespace(nearest_neighbor_ns)
 
