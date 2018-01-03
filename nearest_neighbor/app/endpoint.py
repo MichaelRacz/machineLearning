@@ -37,12 +37,15 @@ class NearestNeighbor(Resource):
         predicted_class = classification.predict_class(wine)
         return {'class': predicted_class}, 200
 
+@nearest_neighbor_ns.route('/swagger.json')
+class Specification(Resource):
+    def get(self):
+        return json.dumps(api.__schema__), 200
+
 def init():
     classification.init()
     nearest_neighbor_circuit_breaker.open()
     api.add_namespace(nearest_neighbor_ns)
-    #TODO: fix specification
-    #api.add_namespace(specification_ns)
 
 if __name__ == '__main__':
     init()

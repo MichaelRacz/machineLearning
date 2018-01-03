@@ -34,12 +34,15 @@ class SVC(Resource):
         predicted_class = classification.predict_class(wine)
         return {'class': predicted_class}, 200
 
+@svc_ns.route('/swagger.json')
+class Specification(Resource):
+    def get(self):
+        return json.dumps(api.__schema__), 200
+
 def init():
     classification.init()
     svc_circuit_breaker.open()
     api.add_namespace(svc_ns)
-    #TODO: fix specification
-    #api.add_namespace(specification_ns)
 
 if __name__ == '__main__':
     init()

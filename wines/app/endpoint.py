@@ -81,13 +81,16 @@ class Wines(Resource):
         id = datastore.create(classified_wine)
         return {'id': id}, 201
 
+@wines_ns.route('/swagger.json')
+class Specification(Resource):
+    def get(self):
+        return json.dumps(api.__schema__), 200
+
 class InitializationScope(ContextDecorator):
     def __enter__(self):
         database.initialize()
         wines_circuit_breaker.open()
         api.add_namespace(wines_ns)
-        #TODO: Fix this
-        #api.add_namespace(specification_ns)
         datastore.init(flask_app.config['KAFKA_HOSTS'], flask_app.config['WINE_TOPIC'])
         return self
 
