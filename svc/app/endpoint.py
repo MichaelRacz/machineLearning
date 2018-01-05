@@ -1,9 +1,8 @@
 from flask import Flask, request
-from flask_restplus import Api
+from flask_restplus import Api, fields
 from common.app.circuit_breaker import CircuitBreaker
 from flask_restplus import Resource
 from common.app.error_handler import handle_errors
-from common.app.web_model import create_wine
 from svc.app import classification
 
 flask_app = Flask('SVC')
@@ -18,7 +17,21 @@ api = Api(flask_app,
 
 svc_circuit_breaker = CircuitBreaker(20)
 svc_ns = api.namespace('svc', description='API for SVC classification')
-wine = create_wine(api)
+
+wine = api.model('Wine', {
+    'alcohol': fields.Float(required=True, min=0.0),
+    'malic_acid': fields.Float(required=True, min=0.0),
+    'ash': fields.Float(required=True, min=0.0),
+    'alcalinity_of_ash': fields.Float(required=True, min=0.0),
+    'magnesium':  fields.Integer(required=True, min=0),
+    'total_phenols': fields.Float(required=True, min=0.0),
+    'flavanoids': fields.Float(required=True, min=0.0),
+    'nonflavanoid_phenols': fields.Float(required=True, min=0.0),
+    'proanthocyanins': fields.Float(required=True, min=0.0),
+    'color_intensity': fields.Float(required=True, min=0.0),
+    'hue': fields.Float(required=True, min=0.0),
+    'odxxx_of_diluted_wines': fields.Float(required=True, min=0.0, description='description: OD280/OD315 of diluted wines'),
+    'proline': fields.Integer(required=True, min=0)})
 
 @svc_ns.route('/')
 class SVC(Resource):
