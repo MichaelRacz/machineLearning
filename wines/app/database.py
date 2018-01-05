@@ -37,7 +37,6 @@ def session_scope():
     finally:
         session.close()
 
-#TODO: Move somewhere else?
 def create_classified_wine(wine):
     wine_dict = _to_wine_property_dict(wine)
     return {'wine_class': wine.wine_class, 'wine': wine_dict}

@@ -22,14 +22,6 @@ def before_tag(context, tag):
     if tag == 'needs_state_reset':
         _clear_database()
         context.test_log_backend.reset_topic()
-    if tag == 'log_synchronization':
-        pass
-        #TODO: what should happen here
-
-def after_tag(context, tag):
-    if tag == 'log_synchronization':
-        pass
-        #TODO: what should happen here?
 
 def _clear_database():
     engine.execute('DELETE FROM Wines')
