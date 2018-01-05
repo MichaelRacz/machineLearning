@@ -1,8 +1,8 @@
 from flask import Flask, request
 from flask_restplus import Api
-from common.app.circuit_breaker import CircuitBreaker
 from flask_restplus import Resource, reqparse
 from wines.app import datastore, database
+from wines.app.service_state import wines_circuit_breaker
 from common.app.error_handler import handle_errors
 from flask_restplus import fields
 from contextlib import ContextDecorator
@@ -17,7 +17,6 @@ api = Api(flask_app,
     prefix='/v1',
     default_mediatype='application/json')
 
-wines_circuit_breaker = CircuitBreaker(20)
 wines_ns = api.namespace('wines', description='API of wine datastore')
 
 wine = api.model('Wine', {

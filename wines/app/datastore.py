@@ -1,6 +1,7 @@
 from pykafka import KafkaClient
 import json
 from wines.app import database
+from wines.app.service_state import wines_circuit_breaker
 
 producer = None
 
@@ -24,10 +25,8 @@ def create(classified_wine):
         try:
             _delete_from_db(id)
         except Exception:
-            pass
-            # TODO: move closer to circuit breaker decoratee
-            # circuit_breaker.wines_circuit_breaker.close(_distributed_log_message, 500)
-        raise WineDomainError(_distributed_log_message, error) from error
+            wines_circuit_breaker.close()
+        raise SyncError(error) from error
     return id
 
 def retrieve(id):
@@ -41,15 +40,12 @@ def delete(id):
     try:
         _log_delete(id)
     except Exception as error:
-        # TODO: move closer to circuit breaker decoratee
-        #circuit_breaker.wines_circuit_breaker.close(_distributed_log_message, 500)
-        raise WineDomainError(_distributed_log_message, error) from error
+        wines_circuit_breaker.close()
+        raise SyncError(error) from error
 
-_distributed_log_message = 'Failed to propagate to the distributed log.'
-
-class WineDomainError(Exception):
-    def __init__(self, message, inner_error=None):
-        self.message = message
+class SyncError(Exception):
+    def __init__(self, inner_error=None):
+        self.message = 'Failed to synchronize distributed log and database.'
         self.inner_error = inner_error
 
     def __str__(self):
@@ -57,7 +53,7 @@ class WineDomainError(Exception):
 
     def __repr__(self):
         inner_error_repr = repr(self.inner_error) if self.inner_error is not None else None
-        return "WineDomainError ('{}'). Inner error: {}".format(self.message, inner_error_repr)
+        return "SyncError ('{}'). Inner error: {}".format(self.message, inner_error_repr)
 
 def _insert_into_db(classified_wine, id = None):
     merged_wine = {**{'wine_class': classified_wine['wine_class']}, **classified_wine['wine']}
@@ -90,6 +86,9 @@ class UnknownRecordError(Exception):
         self.message = "No record with id '{}' found.".format(id)
 
     def __str__(self):
+        return self.message
+
+    def __repr__(self):
         return self.message
 
 def _log_create(id, classified_wine):

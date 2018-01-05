@@ -16,7 +16,7 @@ class CircuitBreaker:
         finally:
             self._lock.release()
 
-    def close(self, reason, status_code):
+    def close(self, reason='Circuit breaker closed.', status_code=500):
         self._lock.acquire()
         try:
             self._is_open = False
