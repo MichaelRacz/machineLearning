@@ -1,3 +1,5 @@
+# TODO: Create docker file for each service
+
 #FROM python:3.6.1-alpine
 FROM frolvlad/alpine-python-machinelearning
 

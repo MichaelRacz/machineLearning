@@ -16,32 +16,36 @@ services:
       KAFKA_DELETE_TOPIC_ENABLE: "true"
     networks:
       - machineLearningNet
-  datastore:
-    build: .
-    links:
-      - kafka
-    ports:
-      - '1337:80'
-    networks:
-      - machineLearningNet
-    entrypoint: python -m app.datastore
-  svc:
-    build: .
-    links:
-      - kafka
-    ports:
-      - '1338:80'
-    networks:
-      - machineLearningNet
-    entrypoint: python -m app.svc
-  nearest_neighbor:
-    build: .
-    links:
-      - kafka
-    ports:
-      - '1339:80'
-    networks:
-      - machineLearningNet
-    entrypoint: python -m app.nearest_neighbor
+# TODO: Currently not working
+# 1) fix
+# 2) move closer to environment
+
+#  datastore:
+#    build: .
+#    links:
+#      - kafka
+#    ports:
+#      - '1337:80'
+#    networks:
+#      - machineLearningNet
+#    entrypoint: python -m app.datastore
+#  svc:
+#    build: .
+#    links:
+#      - kafka
+#    ports:
+#      - '1338:80'
+#    networks:
+#      - machineLearningNet
+#    entrypoint: python -m app.svc
+#  nearest_neighbor:
+#    build: .
+#    links:
+#      - kafka
+#    ports:
+#      - '1339:80'
+#    networks:
+#      - machineLearningNet
+#    entrypoint: python -m app.nearest_neighbor
 networks:
   machineLearningNet:
